@@ -60,6 +60,26 @@ class TestParseXmlMethods(unittest.TestCase):
         self.assertIsInstance(way['nodes'], list)
         self.assertEqual(way['nodes'], [2, 3, 4])
 
+    def test_relation(self):
+        """
+        Test parsing relation
+        """
+        xml = read_data_file('relation.osm')
+        josm = parse_xml(xml)
+
+        self.assertIsInstance(josm, dict)
+        self.assertIsInstance(josm['elements'], list)
+        self.assertEqual(len(josm['elements']), 10)
+
+        relation = josm['elements'][0]
+
+        self.assertIsInstance(relation, dict)
+        self.assertEqual(relation['type'], 'relation')
+        self.assertEqual(relation['id'], 1)
+        self.assertIsInstance(relation['members'], list)
+        self.assertEqual(len(relation['members']), 2)
+        self.assertEqual(relation['tags'], { 'type': 'multipolygon' })
+
     def test_map(self):
         """
         Test parsing of usual map
