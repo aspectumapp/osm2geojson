@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ElementTree
 default_types = ['node', 'way', 'relation', 'member']
+optional_meta_fields = ['timestamp', 'version:int', 'changeset:int', 'user', 'uid:int']
 
 def parse_key(key):
     t = 'string'
@@ -16,6 +17,12 @@ def to_type(v, t):
     elif t == 'float':
         return float(v)
     return v
+
+def with_meta_fields(fields = []):
+    for field in optional_meta_fields:
+        if field not in fields:
+            fields.append(field)
+    return fields
 
 def copy_fields(node, base, optional = []):
     obj = {}
@@ -42,13 +49,24 @@ def tags_to_obj(tags):
     return obj
 
 def parse_bounds(node):
-    return copy_fields(node, ['minlat:float', 'minlon:float', 'maxlat:float', 'maxlon:float'])
+    return copy_fields(node, [
+        'minlat:float',
+        'minlon:float',
+        'maxlat:float',
+        'maxlon:float'
+    ])
 
 def parse_tag(node):
     return copy_fields(node, ['k', 'v'])
 
 def parse_node(node):
-    item = copy_fields(node, [], ['role', 'id:int', 'ref:int', 'lat:float', 'lon:float'])
+    item = copy_fields(node, [], with_meta_fields([
+        'role',
+        'id:int',
+        'ref:int',
+        'lat:float',
+        'lon:float'
+    ]))
     item['type'] = 'node'
     return item
 
@@ -67,7 +85,7 @@ def parse_way(node):
         else:
             print('Way contains wrong child', child.tag)
 
-    way = copy_fields(node, [], ['ref:int', 'id:int', 'role'])
+    way = copy_fields(node, [], with_meta_fields(['ref:int', 'id:int', 'role']))
     way['type'] = 'way'
     if len(tags) > 0:
         way['tags'] = tags_to_obj(tags)
@@ -80,11 +98,9 @@ def parse_way(node):
 def parse_relation(node):
     bounds, tags, members, unhandled = parse_xml_node(node, ['member'])
 
-    relation = {
-        'type': 'relation',
-        'id': int(node.attrib['id']),
-        'members': members
-    }
+    relation = copy_fields(node, ['id:int'], with_meta_fields())
+    relation['type'] = 'relation'
+    relation['members'] = members
     if bounds is not None:
         relation['bounds'] = bounds
     if len(tags) > 0:
