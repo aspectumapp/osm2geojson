@@ -60,6 +60,7 @@ def parse_tag(node):
     return copy_fields(node, ['k', 'v'])
 
 def parse_node(node):
+    bounds, tags, items, unhandled = parse_xml_node(node)
     item = copy_fields(node, [], with_meta_fields([
         'role',
         'id:int',
@@ -68,6 +69,8 @@ def parse_node(node):
         'lon:float'
     ]))
     item['type'] = 'node'
+    if len(tags) > 0:
+        item['tags'] = tags_to_obj(tags)
     return item
 
 def parse_way(node):
