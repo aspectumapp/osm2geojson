@@ -67,23 +67,29 @@ def parse_way(node):
         else:
             print('Way contains wrong child', child.tag)
 
-    item = copy_fields(node, [], ['ref:int', 'id:int', 'role'])
-    item['tags'] = tags_to_obj(tags)
-    item['type'] = 'way'
-    item['geometry'] = geometry
-    item['nodes'] = nodes
-    return item
+    way = copy_fields(node, [], ['ref:int', 'id:int', 'role'])
+    way['type'] = 'way'
+    if len(tags) > 0:
+        way['tags'] = tags_to_obj(tags)
+    if len(geometry) > 0:
+        way['geometry'] = geometry
+    if len(nodes) > 0:
+        way['nodes'] = nodes
+    return way
 
 def parse_relation(node):
     bounds, tags, members, unhandled = parse_xml_node(node, ['member'])
 
-    return {
+    relation = {
         'type': 'relation',
         'id': int(node.attrib['id']),
-        'bounds': bounds,
-        'tags': tags_to_obj(tags),
         'members': members
     }
+    if bounds is not None:
+        relation['bounds'] = bounds
+    if len(tags) > 0:
+        relation['tags'] = tags_to_obj(tags)
+    return relation
 
 def format_josm(elements, unhandled):
     version = 0.6
