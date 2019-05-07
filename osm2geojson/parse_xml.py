@@ -1,13 +1,39 @@
 import xml.etree.ElementTree as ElementTree
+default_types = ['node', 'way', 'relation', 'member']
+
+def parse_key(key):
+    t = 'string'
+    parts = key.split(':')
+    if len(parts) > 1:
+        t = parts[1]
+    return parts[0], t
+
+def to_type(v, t):
+    if t == 'string':
+        return str(v)
+    elif t == 'int':
+        return int(v)
+    elif t == 'float':
+        return float(v)
+    return v
 
 def copy_fields(node, base, optional = []):
     obj = {}
     for key in base:
-        obj[key] = node.attrib[key]
+        key, t = parse_key(key)
+        obj[key] = to_type(node.attrib[key], t)
     for key in optional:
+        key, t = parse_key(key)
         if key in node.attrib:
-            obj[key] = node.attrib[key]
+            obj[key] = to_type(node.attrib[key], t)
     return obj
+
+def filter_items_by_type(items, types):
+    filtered = []
+    for i in items:
+        if i['type'] in types:
+            filtered.append(i)
+    return filtered
 
 def tags_to_obj(tags):
     obj = {}
@@ -16,13 +42,13 @@ def tags_to_obj(tags):
     return obj
 
 def parse_bounds(node):
-    return copy_fields(node, ['minlat', 'minlon', 'maxlat', 'maxlon'])
+    return copy_fields(node, ['minlat:float', 'minlon:float', 'maxlat:float', 'maxlon:float'])
 
 def parse_tag(node):
     return copy_fields(node, ['k', 'v'])
 
 def parse_node(node):
-    item = copy_fields(node, [], ['role', 'id', 'ref', 'lat', 'lon'])
+    item = copy_fields(node, [], ['role', 'id:int', 'ref:int', 'lat:float', 'lon:float'])
     item['type'] = 'node'
     return item
 
@@ -35,13 +61,13 @@ def parse_way(node):
             if 'ref' in child.attrib:
                 nodes.append(int(child.attrib['ref']))
             else:
-                geometry.append(copy_fields(child, ['lat', 'lon']))
+                geometry.append(copy_fields(child, ['lat:float', 'lon:float']))
         elif child.tag == 'tag':
             tags.append(parse_tag(child))
         else:
             print('Way contains wrong child', child.tag)
 
-    item = copy_fields(node, [], ['ref', 'role'])
+    item = copy_fields(node, [], ['ref:int', 'id:int', 'role'])
     item['tags'] = tags_to_obj(tags)
     item['type'] = 'way'
     item['geometry'] = geometry
@@ -49,18 +75,17 @@ def parse_way(node):
     return item
 
 def parse_relation(node):
-    # Ignore nodes, ways, relations for relation node
-    bounds, tags, nodes, ways, relations, members, unhandled = parse_xml_node(node)
+    bounds, tags, members, unhandled = parse_xml_node(node, ['member'])
 
     return {
         'type': 'relation',
-        'id': node.attrib['id'],
+        'id': int(node.attrib['id']),
         'bounds': bounds,
         'tags': tags_to_obj(tags),
         'members': members
     }
 
-def format_josm(nodes, ways, relations, unhandled):
+def format_josm(elements, unhandled):
     version = 0.6
     generator = None
     timestamp_osm_base = None
@@ -79,7 +104,7 @@ def format_josm(nodes, ways, relations, unhandled):
 
     item = {
         'version': version,
-        'elements': nodes + ways + relations
+        'elements': elements
     }
 
     if generator is not None:
@@ -99,10 +124,9 @@ def parse(xml_str):
         print('OSM root node not found!')
         return None
 
-    # Ignore bounds, tags and members for OSM root node
-    bounds, tags, nodes, ways, relations, members, unhandled = parse_xml_node(root)
+    bounds, tags, elements, unhandled = parse_xml_node(root, ['node', 'way', 'relation'])
     unhandled.append(root)
-    return format_josm(nodes, ways, relations, unhandled)
+    return format_josm(elements, unhandled)
 
 def parse_node_type(node, node_type):
     if node_type == 'bounds':
@@ -127,16 +151,11 @@ def parse_node_type(node, node_type):
         print('Unhandled node type', node_type)
         return None
 
-def parse_xml_node(root):
+def parse_xml_node(root, node_types = default_types):
     bounds = None
+    tags = []
+    items = []
     unhandled = []
-    data = {
-        'node': [],
-        'way': [],
-        'relation': [],
-        'tag': [],
-        'member': []
-    }
 
     for child in root:
         if child.tag == 'bounds':
@@ -144,17 +163,15 @@ def parse_xml_node(root):
                 print('Node bounds should be unique')
             bounds = parse_bounds(child)
         else:
-            if child.tag not in data:
-                print('Unhandled node', child.tag)
+            if child.tag == 'tag':
+                tags.append(parse_tag(child))
+                continue
+
+            if child.tag not in default_types:
                 unhandled.append(child)
                 continue
-            data[child.tag].append(parse_node_type(child, child.tag))
 
-    return \
-        bounds, \
-        data['tag'], \
-        data['node'], \
-        data['way'], \
-        data['relation'], \
-        data['member'], \
-        unhandled
+            if child.tag in node_types:
+                items.append(parse_node_type(child, child.tag))
+
+    return bounds, tags, items, unhandled
