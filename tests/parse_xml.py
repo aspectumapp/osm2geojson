@@ -1,5 +1,6 @@
 import unittest
 import codecs
+import json
 import os
 
 from osm2geojson.parse_xml import parse as parse_xml
@@ -20,6 +21,7 @@ class TestParseXmlMethods(unittest.TestCase):
         josm = parse_xml(xml)
 
         self.assertIsInstance(josm, dict)
+        # Use version 0.6 as default
         self.assertEqual(josm['version'], 0.6)
         self.assertEqual(josm['elements'], [])
 
@@ -89,6 +91,22 @@ class TestParseXmlMethods(unittest.TestCase):
 
         self.assertIsInstance(josm, dict)
         self.assertEqual(josm['version'], 0.6)
+
+    def test_all_files(self):
+        """
+        Test parsing of all files and compare with json version
+        """
+        self.maxDiff = None
+        for name in ['empty', 'node', 'way', 'map', 'relation']:
+            xml_data = read_data_file(name + '.osm')
+            json_data = read_data_file(name + '.json')
+            josm_xml = parse_xml(xml_data)
+            josm_json = json.loads(json_data)
+
+            if 'version' not in josm_json:
+                del josm_xml['version']
+
+            self.assertDictEqual(josm_json, josm_xml)
 
 if __name__ == '__main__':
     unittest.main()
