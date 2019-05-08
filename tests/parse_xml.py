@@ -116,7 +116,8 @@ class TestParseXmlMethods(unittest.TestCase):
         queries = [
             "rel(448930); out geom;",
             "rel(448930); out meta;",
-            "rel(448930); out bb;"
+            "rel(448930); out bb;",
+            "rel(448930); out count;"
         ]
 
         print()

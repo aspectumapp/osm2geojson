@@ -58,6 +58,14 @@ def parse_bounds(node):
         'maxlon:float'
     ])
 
+def parse_count(node):
+    bounds, tags, _empty, unhandled = parse_xml_node(node, [])
+    item = copy_fields(node, ['id:int'])
+    item['type'] = 'count'
+    if len(tags) > 0:
+        item['tags'] = tags_to_obj(tags)
+    return item
+
 def parse_tag(node):
     return copy_fields(node, ['k', 'v'])
 
@@ -150,7 +158,7 @@ def parse(xml_str):
         print('OSM root node not found!')
         return None
 
-    bounds, tags, elements, unhandled = parse_xml_node(root, ['node', 'way', 'relation'])
+    bounds, tags, elements, unhandled = parse_xml_node(root, ['node', 'way', 'relation', 'count'])
     unhandled.append(root)
     return format_josm(elements, unhandled)
 
@@ -182,6 +190,7 @@ def parse_node_type(node, node_type):
 
 def parse_xml_node(root, node_types = default_types):
     bounds = None
+    count = None
     tags = []
     items = []
     unhandled = []
@@ -191,6 +200,10 @@ def parse_xml_node(root, node_types = default_types):
             if bounds is not None:
                 print('Node bounds should be unique')
             bounds = parse_bounds(child)
+        elif child.tag == 'count':
+            if count is not None:
+                print('Node count should be unique')
+            count = parse_count(child)
         else:
             if child.tag == 'tag':
                 tags.append(parse_tag(child))
@@ -203,4 +216,6 @@ def parse_xml_node(root, node_types = default_types):
             if child.tag in node_types:
                 items.append(parse_node_type(child, child.tag))
 
+    if 'count' in node_types and count is not None:
+        items.append(count)
     return bounds, tags, items, unhandled
