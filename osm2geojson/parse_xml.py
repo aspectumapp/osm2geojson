@@ -119,7 +119,7 @@ def parse_relation(node):
         relation['tags'] = tags_to_obj(tags)
     return relation
 
-def format_josm(elements, unhandled):
+def format_ojson(elements, unhandled):
     version = 0.6
     generator = None
     timestamp_osm_base = None
@@ -160,7 +160,7 @@ def parse(xml_str):
 
     bounds, tags, elements, unhandled = parse_xml_node(root, ['node', 'way', 'relation', 'count'])
     unhandled.append(root)
-    return format_josm(elements, unhandled)
+    return format_ojson(elements, unhandled)
 
 def parse_node_type(node, node_type):
     if node_type == 'bounds':
