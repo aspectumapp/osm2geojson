@@ -1,5 +1,5 @@
 import xml.etree.ElementTree as ElementTree
-default_types = ['node', 'way', 'relation', 'member']
+default_types = ['node', 'way', 'relation', 'member', 'nd']
 optional_meta_fields = ['timestamp', 'version:int', 'changeset:int', 'user', 'uid:int']
 
 def parse_key(key):
@@ -28,6 +28,8 @@ def copy_fields(node, base, optional = []):
     obj = {}
     for key in base:
         key, t = parse_key(key)
+        if key not in node.attrib:
+            print(key, 'not found in', node.tag, node.attrib)
         obj[key] = to_type(node.attrib[key], t)
     for key in optional:
         key, t = parse_key(key)
@@ -59,6 +61,9 @@ def parse_bounds(node):
 def parse_tag(node):
     return copy_fields(node, ['k', 'v'])
 
+def parse_nd(node):
+    return copy_fields(node, [], ['ref:int', 'lat:float', 'lon:float'])
+
 def parse_node(node):
     bounds, tags, items, unhandled = parse_xml_node(node)
     item = copy_fields(node, [], with_meta_fields([
@@ -74,19 +79,14 @@ def parse_node(node):
     return item
 
 def parse_way(node):
-    tags = []
+    bounds, tags, nds, unhandled = parse_xml_node(node, ['nd'])
     geometry = []
     nodes = []
-    for child in node:
-        if child.tag == 'nd':
-            if 'ref' in child.attrib:
-                nodes.append(int(child.attrib['ref']))
-            else:
-                geometry.append(copy_fields(child, ['lat:float', 'lon:float']))
-        elif child.tag == 'tag':
-            tags.append(parse_tag(child))
+    for nd in nds:
+        if 'ref' in nd:
+            nodes.append(nd['ref'])
         else:
-            print('Way contains wrong child', child.tag)
+            geometry.append(nd)
 
     way = copy_fields(node, [], with_meta_fields(['ref:int', 'id:int', 'role']))
     way['type'] = 'way'
@@ -101,9 +101,10 @@ def parse_way(node):
 def parse_relation(node):
     bounds, tags, members, unhandled = parse_xml_node(node, ['member'])
 
-    relation = copy_fields(node, ['id:int'], with_meta_fields())
+    relation = copy_fields(node, [], with_meta_fields(['id:int', 'ref:int', 'role']))
     relation['type'] = 'relation'
-    relation['members'] = members
+    if len(members) > 0:
+        relation['members'] = members
     if bounds is not None:
         relation['bounds'] = bounds
     if len(tags) > 0:
@@ -171,6 +172,9 @@ def parse_node_type(node, node_type):
 
     elif node_type == 'member':
         return parse_node_type(node, node.attrib['type'])
+
+    elif node_type == 'nd':
+        return parse_nd(node)
 
     else:
         print('Unhandled node type', node_type)
