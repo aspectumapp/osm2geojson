@@ -96,7 +96,6 @@ class TestParseXmlMethods(unittest.TestCase):
         """
         Test parsing of all files and compare with json version
         """
-        self.maxDiff = None
         for name in ['empty', 'node', 'way', 'map', 'relation']:
             xml_data = read_data_file(name + '.osm')
             json_data = read_data_file(name + '.json')
@@ -114,10 +113,10 @@ class TestParseXmlMethods(unittest.TestCase):
         Test several queries to overpass
         """
         queries = [
-            "rel(448930); out geom;",
-            "rel(448930); out meta;",
-            "rel(448930); out bb;",
-            "rel(448930); out count;"
+            'rel(448930); out geom;',
+            'rel(448930); out meta;',
+            'rel(448930); out bb;',
+            'rel(448930); out count;'
         ]
 
         print()
