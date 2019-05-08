@@ -7,5 +7,5 @@ setup(
    author='rapkin (Parfeniuk Mykola)',
    author_email='mikola.parfenyuck@gmail.com',
    packages=['osm2geojson'],
-   install_requires=[]
+   install_requires=['shapely']
 )
