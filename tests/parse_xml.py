@@ -3,7 +3,7 @@ import codecs
 import json
 import os
 
-from osm2geojson.parse_xml import parse as parse_xml
+from osm2geojson import parse_xml, overpass_call
 
 dirname = os.path.dirname(__file__)
 
@@ -18,25 +18,25 @@ class TestParseXmlMethods(unittest.TestCase):
         Test parsing of empty <osm> tag
         """
         xml = read_data_file('empty.osm')
-        josm = parse_xml(xml)
+        data = parse_xml(xml)
 
-        self.assertIsInstance(josm, dict)
+        self.assertIsInstance(data, dict)
         # Use version 0.6 as default
-        self.assertEqual(josm['version'], 0.6)
-        self.assertEqual(josm['elements'], [])
+        self.assertEqual(data['version'], 0.6)
+        self.assertEqual(data['elements'], [])
 
     def test_node(self):
         """
         Test parsing node
         """
         xml = read_data_file('node.osm')
-        josm = parse_xml(xml)
+        data = parse_xml(xml)
 
-        self.assertIsInstance(josm, dict)
-        self.assertIsInstance(josm['elements'], list)
-        self.assertEqual(len(josm['elements']), 1)
+        self.assertIsInstance(data, dict)
+        self.assertIsInstance(data['elements'], list)
+        self.assertEqual(len(data['elements']), 1)
 
-        node = josm['elements'][0]
+        node = data['elements'][0]
         self.assertIsInstance(node, dict)
         self.assertEqual(node['type'], 'node')
         self.assertEqual(node['id'], 1)
@@ -48,13 +48,13 @@ class TestParseXmlMethods(unittest.TestCase):
         Test parsing way
         """
         xml = read_data_file('way.osm')
-        josm = parse_xml(xml)
+        data = parse_xml(xml)
 
-        self.assertIsInstance(josm, dict)
-        self.assertIsInstance(josm['elements'], list)
-        self.assertEqual(len(josm['elements']), 4)
+        self.assertIsInstance(data, dict)
+        self.assertIsInstance(data['elements'], list)
+        self.assertEqual(len(data['elements']), 4)
 
-        way = josm['elements'][0]
+        way = data['elements'][0]
 
         self.assertIsInstance(way, dict)
         self.assertEqual(way['type'], 'way')
@@ -67,13 +67,13 @@ class TestParseXmlMethods(unittest.TestCase):
         Test parsing relation
         """
         xml = read_data_file('relation.osm')
-        josm = parse_xml(xml)
+        data = parse_xml(xml)
 
-        self.assertIsInstance(josm, dict)
-        self.assertIsInstance(josm['elements'], list)
-        self.assertEqual(len(josm['elements']), 10)
+        self.assertIsInstance(data, dict)
+        self.assertIsInstance(data['elements'], list)
+        self.assertEqual(len(data['elements']), 10)
 
-        relation = josm['elements'][0]
+        relation = data['elements'][0]
 
         self.assertIsInstance(relation, dict)
         self.assertEqual(relation['type'], 'relation')
@@ -87,10 +87,10 @@ class TestParseXmlMethods(unittest.TestCase):
         Test parsing of usual map
         """
         xml = read_data_file('map.osm')
-        josm = parse_xml(xml)
+        data = parse_xml(xml)
 
-        self.assertIsInstance(josm, dict)
-        self.assertEqual(josm['version'], 0.6)
+        self.assertIsInstance(data, dict)
+        self.assertEqual(data['version'], 0.6)
 
     def test_all_files(self):
         """
@@ -100,13 +100,37 @@ class TestParseXmlMethods(unittest.TestCase):
         for name in ['empty', 'node', 'way', 'map', 'relation']:
             xml_data = read_data_file(name + '.osm')
             json_data = read_data_file(name + '.json')
-            josm_xml = parse_xml(xml_data)
-            josm_json = json.loads(json_data)
+            parsed_json = parse_xml(xml_data)
+            saved_json = json.loads(json_data)
 
-            if 'version' not in josm_json:
-                del josm_xml['version']
+            if 'version' not in saved_json:
+                del parsed_json['version']
 
-            self.assertDictEqual(josm_json, josm_xml)
+            self.assertDictEqual(saved_json, parsed_json)
+
+    # @unittest.skip('This test takes a lot of time')
+    def test_overpass_queries(self):
+        """
+        Test several queries to overpass
+        """
+        queries = [
+            "rel(448930); out geom;",
+            "rel(448930); out meta;",
+            "rel(448930); out bb;"
+        ]
+
+        print()
+        for query in queries:
+            print('Test query:', query)
+            query_json = '[out:json];' + query
+            data_xml = overpass_call(query)
+            data_json = overpass_call(query_json)
+            overpass_json = json.loads(data_json)
+            parsed_json = parse_xml(data_xml)
+            # Ignore different time for queries
+            del overpass_json['osm3s']['timestamp_osm_base']
+            del parsed_json['osm3s']['timestamp_osm_base']
+            self.assertDictEqual(overpass_json, parsed_json)
 
 if __name__ == '__main__':
     unittest.main()
