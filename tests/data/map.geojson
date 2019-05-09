@@ -1,0 +1,604 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "node",
+        "id": 2281802897,
+        "tags": {
+          "amenity": "fountain"
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.257524,
+          46.4555668
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "way",
+        "id": 33200366,
+        "tags": {
+          "bicycle": "no",
+          "highway": "pedestrian"
+        }
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.2579312,
+            46.454835
+          ],
+          [
+            11.2578535,
+            46.4551482
+          ],
+          [
+            11.2578714,
+            46.4554286
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "way",
+        "id": 33748708,
+        "tags": {
+          "barrier": "wall"
+        }
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.2568826,
+            46.4554992
+          ],
+          [
+            11.2568351,
+            46.455501
+          ],
+          [
+            11.2569027,
+            46.4548927
+          ],
+          [
+            11.2578379,
+            46.4551564
+          ],
+          [
+            11.257834,
+            46.4553983
+          ],
+          [
+            11.2578309,
+            46.455408
+          ],
+          [
+            11.2578166,
+            46.4554127
+          ],
+          [
+            11.2578065,
+            46.4554127
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "way",
+        "id": 105582211,
+        "tags": {
+          "building": "yes"
+        }
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              11.2579365,
+              46.4550159
+            ],
+            [
+              11.2579094,
+              46.4551715
+            ],
+            [
+              11.2580235,
+              46.4551816
+            ],
+            [
+              11.2580373,
+              46.4551161
+            ],
+            [
+              11.2580278,
+              46.4551126
+            ],
+            [
+              11.2580442,
+              46.4550251
+            ],
+            [
+              11.2579365,
+              46.4550159
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "way",
+        "id": 201032335,
+        "tags": {
+          "building": "yes"
+        }
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              11.2579365,
+              46.4550159
+            ],
+            [
+              11.2580442,
+              46.4550251
+            ],
+            [
+              11.2579603,
+              46.4549282
+            ],
+            [
+              11.2579365,
+              46.4550159
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "way",
+        "id": 33052937,
+        "tags": {
+          "amenity": "parking",
+          "capacity:disabled": "2",
+          "fee": "yes",
+          "type": "surface"
+        }
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              11.2576431,
+              46.4555492
+            ],
+            [
+              11.2576358,
+              46.4555129
+            ],
+            [
+              11.2580121,
+              46.4554651
+            ],
+            [
+              11.2580266,
+              46.4555072
+            ],
+            [
+              11.2576431,
+              46.4555492
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "way",
+        "id": 33189032,
+        "tags": {
+          "bicycle": "yes",
+          "highway": "pedestrian",
+          "name": "Kapuzinerstra\u00dfe - via Cappuccini",
+          "name:de": "Kapuzinerstra\u00dfe",
+          "name:it": "via Cappuccini"
+        }
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.2579495,
+            46.45542
+          ],
+          [
+            11.2578714,
+            46.4554286
+          ],
+          [
+            11.2576008,
+            46.4554764
+          ],
+          [
+            11.2574519,
+            46.4555026
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "way",
+        "id": 106227173,
+        "tags": {
+          "access": "private",
+          "highway": "service",
+          "service": "driveway"
+        }
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.2573247,
+            46.4555155
+          ],
+          [
+            11.2573066,
+            46.4554415
+          ],
+          [
+            11.2572833,
+            46.4553349
+          ],
+          [
+            11.2569928,
+            46.4553232
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "way",
+        "id": 106227181,
+        "tags": {
+          "building": "yes"
+        }
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              11.2570676,
+              46.4555039
+            ],
+            [
+              11.2572652,
+              46.4554875
+            ],
+            [
+              11.2572186,
+              46.4553667
+            ],
+            [
+              11.2570496,
+              46.4553857
+            ],
+            [
+              11.2570586,
+              46.4554554
+            ],
+            [
+              11.256879,
+              46.4554532
+            ],
+            [
+              11.2568826,
+              46.4554992
+            ],
+            [
+              11.2570676,
+              46.4555039
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "way",
+        "id": 201032366,
+        "tags": {
+          "highway": "service",
+          "oneway": "yes",
+          "service": "parking_aisle"
+        }
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.2579605,
+            46.4555422
+          ],
+          [
+            11.2577161,
+            46.4555719
+          ],
+          [
+            11.2576677,
+            46.4556058
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "way",
+        "id": 218973695,
+        "tags": {
+          "highway": "pedestrian"
+        }
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.2576008,
+            46.4554764
+          ],
+          [
+            11.2575984,
+            46.4555554
+          ],
+          [
+            11.2575528,
+            46.4556258
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "way",
+        "id": 218973696,
+        "tags": {
+          "highway": "footway"
+        }
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.2579618,
+            46.4555623
+          ],
+          [
+            11.2579605,
+            46.4555422
+          ],
+          [
+            11.2579495,
+            46.45542
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "way",
+        "id": 236856462,
+        "tags": {
+          "bicycle": "yes",
+          "highway": "pedestrian",
+          "name": "Hans Weber Tyrol Platz - piazza Hans Weber Tyrol",
+          "name:de": "Hans Weber Tyrol Platz",
+          "name:it": "piazza Hans Weber Tyrol"
+        }
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.2574683,
+            46.4555997
+          ],
+          [
+            11.2574519,
+            46.4555026
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "way",
+        "id": 236856817,
+        "tags": {
+          "bicycle": "yes",
+          "highway": "pedestrian",
+          "name": "Kapuzinerstra\u00dfe - via Cappuccini",
+          "name:de": "Kapuzinerstra\u00dfe",
+          "name:it": "via Cappuccini"
+        }
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.2574519,
+            46.4555026
+          ],
+          [
+            11.2573247,
+            46.4555155
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "relation",
+        "id": 2385566,
+        "tags": {
+          "network": "lwn",
+          "ref": "540",
+          "route": "hiking",
+          "type": "route"
+        }
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.2574683,
+            46.4555997
+          ],
+          [
+            11.2574519,
+            46.4555026
+          ],
+          [
+            11.2573247,
+            46.4555155
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "relation",
+        "id": 121733,
+        "tags": {
+          "type": "multipolygon"
+        }
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                11.2570937,
+                46.4552187
+              ],
+              [
+                11.2570433,
+                46.4552155
+              ],
+              [
+                11.2570345,
+                46.4552827
+              ],
+              [
+                11.2573703,
+                46.4553036
+              ],
+              [
+                11.2573601,
+                46.4553814
+              ],
+              [
+                11.2575566,
+                46.4553937
+              ],
+              [
+                11.257567,
+                46.4553143
+              ],
+              [
+                11.2577374,
+                46.4553249
+              ],
+              [
+                11.2577565,
+                46.4551787
+              ],
+              [
+                11.257641,
+                46.4551715
+              ],
+              [
+                11.2576569,
+                46.4550506
+              ],
+              [
+                11.2575715,
+                46.4550453
+              ],
+              [
+                11.2574786,
+                46.4550395
+              ],
+              [
+                11.2574846,
+                46.4549942
+              ],
+              [
+                11.2571261,
+                46.4549719
+              ],
+              [
+                11.2570937,
+                46.4552187
+              ]
+            ],
+            [
+              [
+                11.2572168,
+                46.4551937
+              ],
+              [
+                11.2572332,
+                46.4550776
+              ],
+              [
+                11.2573757,
+                46.4550871
+              ],
+              [
+                11.2573593,
+                46.4552032
+              ],
+              [
+                11.2572168,
+                46.4551937
+              ]
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -10,7 +10,7 @@ class TestOsm2GeoJsonMethods(unittest.TestCase):
         """
         Test how xml2geojson converts saved files
         """
-        for name in ['empty', 'node', 'way', 'relation']:
+        for name in ['empty', 'node', 'way', 'relation', 'map']:
             xml_data = read_data_file(name + '.osm')
             geojson_data = read_data_file(name + '.geojson')
             data = xml2geojson(xml_data)

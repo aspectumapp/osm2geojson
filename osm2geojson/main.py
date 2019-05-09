@@ -37,9 +37,20 @@ def _json2geojson(data):
         else:
             print('Element not converted', el)
 
+    used = {}
+    for ref in refs:
+        if 'used' in ref:
+            used[ref['id']] = ref['used']
+
+    filtered_features = []
+    for f in features:
+        if f['properties']['id'] in used:
+            continue
+        filtered_features.append(f)
+
     return {
         'type': 'FeatureCollection',
-        'features': features
+        'features': filtered_features
     }
 
 
@@ -125,9 +136,10 @@ def way_to_feature(way, refs_index = {}):
         for ref in way['nodes']:
             if ref in refs_index:
                 node = refs_index[ref]
+                node['used'] = way['id']
                 coords.append([node['lon'], node['lat']])
             else:
-                print('Node not found in index', ref)
+                print('Node not found in index', ref, 'for way', way)
 
     elif 'ref' in way:
         if way['ref'] not in refs_index:
@@ -135,8 +147,21 @@ def way_to_feature(way, refs_index = {}):
             return None
 
         ref = refs_index[way['ref']]
+        if 'id' in way:
+            ref['used'] = way['id']
+        elif 'used' in way:
+            ref['used'] = way['used']
+        else:
+            # filter will not work for this situation
+            print('Failed to mark ref as used', ref, 'for way', way)
         ref_way = way_to_feature(ref, refs_index)
-        coords = ref_way['geometry']['coordinates']
+        if ref_way is None:
+            print('Way by ref not converted to feature', way)
+            return None
+        if ref_way['geometry']['type'] is 'Polygon':
+            coords = ref_way['geometry']['coordinates'][0]
+        else:
+            coords = ref_way['geometry']['coordinates']
 
     else:
         # throw exception
@@ -147,13 +172,34 @@ def way_to_feature(way, refs_index = {}):
         print('Not found coords for way', way)
         return None
 
-    return to_feature({
-        'type': 'LineString',
-        'coordinates': coords
-    }, get_element_props(way))
+    if is_geometry_polygon(way):
+        # better to use shapely to create polygons here
+        if len(coords) < 4:
+            print('Not found coords for way (polygon)', way)
+            return None
+
+        # complete some polygons
+        first = coords[0]
+        last = coords[-1]
+        if last[0] != first[0] or last[1] != first[1]:
+            coords.append(first)
+
+        return to_feature({
+            'type': 'Polygon',
+            'coordinates': [coords]
+        }, get_element_props(way))
+    else:
+        return to_feature({
+            'type': 'LineString',
+            'coordinates': coords
+        }, get_element_props(way))
 
 
-def is_geometry_polygon(tags):
+def is_geometry_polygon(node):
+    if 'tags' not in node:
+        return False
+    tags = node['tags']
+
     if 'type' in tags and tags['type'] == 'multipolygon':
         return True
 
@@ -169,7 +215,7 @@ def is_geometry_polygon(tags):
 
 
 def relation_to_feature(rel, refs_index):
-    if is_geometry_polygon(rel['tags']):
+    if is_geometry_polygon(rel):
         return multipolygon_relation_to_feature(rel, refs_index)
     else:
         return multiline_realation_to_feature(rel, refs_index)
@@ -189,7 +235,11 @@ def multiline_realation_to_feature(rel, refs_index):
             continue
 
         way = geometry.shape(way_feature['geometry'])
+        if isinstance(way, geometry.Polygon):
+            # this should not happen on real data
+            way = geometry.LineString(way.exterior.coords)
         lines.append(way)
+
     multiline = geometry.MultiLineString(lines)
     multiline = ops.linemerge(multiline)
     return shape_to_feature(multiline, get_element_props(rel))
@@ -204,13 +254,18 @@ def multipolygon_relation_to_feature(rel, refs_index):
             print('member not handled', member)
             continue
 
+        member['used'] = rel['id']
+
         way_feature = way_to_feature(member, refs_index)
         if way_feature is None:
             # throw exception
-            print('Failed to make way in relation', rel)
+            print('Failed to make way', member, 'in relation', rel)
             continue
 
         way = geometry.shape(way_feature['geometry'])
+        if isinstance(way, geometry.Polygon):
+            way = geometry.LineString(way.exterior.coords)
+
         if member['role'] == 'inner':
             inner.append(way)
         else:
