@@ -24,48 +24,6 @@
           ]
         ]
       }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "type": "node",
-        "id": 2
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          1.0,
-          0.0
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "type": "node",
-        "id": 3
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          1.1,
-          0.0
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "type": "node",
-        "id": 4
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          1.2,
-          0.1
-        ]
-      }
     }
   ]
 }
