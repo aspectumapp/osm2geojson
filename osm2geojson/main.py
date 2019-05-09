@@ -1,6 +1,13 @@
 from .parse_xml import parse as parse_xml
 from shapely import geometry, ops
 import json
+import os
+
+dirname = os.path.dirname(__file__)
+polygon_features_file = os.path.join(dirname, '../osm-polygon-features/polygon-features.json')
+
+with open(polygon_features_file) as data:
+    polygon_features = json.loads(data.read())
 
 
 def json2geojson(data):
@@ -146,13 +153,23 @@ def way_to_feature(way, refs_index = {}):
     }, get_element_props(way))
 
 
-def relation_to_feature(rel, refs_index):
-    # should be handled by lib?
-    geometry_type = 'MultiLineString'
-    if rel['tags']['type'] in ['boundary', 'multipolygon']:
-        geometry_type = 'MultiPolygon'
+def is_geometry_polygon(tags):
+    if 'type' in tags and tags['type'] == 'multipolygon':
+        return True
 
-    if geometry_type == 'MultiPolygon':
+    for rule in polygon_features:
+        if rule['key'] in tags:
+            if rule['polygon'] == 'all':
+                return True
+            if 'whitelist' in rule and tags[rule['key']] in rule['values']:
+                return True
+            if 'blacklist' in rule and tags[rule['key']] in rule['values']:
+                return False
+    return False
+
+
+def relation_to_feature(rel, refs_index):
+    if is_geometry_polygon(rel['tags']):
         return multipolygon_relation_to_feature(rel, refs_index)
     else:
         return multiline_realation_to_feature(rel, refs_index)

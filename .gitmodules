@@ -1,0 +1,3 @@
+[submodule "osm-polygon-features"]
+	path = osm-polygon-features
+	url = https://github.com/tyrasd/osm-polygon-features

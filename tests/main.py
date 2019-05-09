@@ -4,7 +4,6 @@ import os
 
 from .parse_xml import read_data_file
 from osm2geojson import overpass_call, xml2geojson
-dirname = os.path.dirname(__file__)
 
 class TestOsm2GeoJsonMethods(unittest.TestCase):
     def test_files_convertation(self):
