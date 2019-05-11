@@ -4,7 +4,7 @@ import json
 import os
 
 dirname = os.path.dirname(__file__)
-polygon_features_file = os.path.join(dirname, '../osm-polygon-features/polygon-features.json')
+polygon_features_file = os.path.join(dirname, './polygon-features.json')
 
 with open(polygon_features_file) as data:
     polygon_features = json.loads(data.read())
