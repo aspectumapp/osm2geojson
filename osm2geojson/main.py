@@ -239,6 +239,8 @@ def multiline_realation_to_feature(rel, refs_index):
             # this should not happen on real data
             way = geometry.LineString(way.exterior.coords)
         lines.append(way)
+    if len(lines) < 1:
+        return None
 
     multiline = geometry.MultiLineString(lines)
     multiline = ops.linemerge(multiline)
