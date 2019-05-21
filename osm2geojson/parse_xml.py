@@ -91,7 +91,7 @@ def parse_way(node):
     geometry = []
     nodes = []
     for nd in nds:
-        if 'ref' in nd:
+        if 'ref' in nd and 'lat' not in nd and 'lon' not in nd:
             nodes.append(nd['ref'])
         else:
             geometry.append(nd)
