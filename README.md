@@ -1,6 +1,7 @@
 # osm2geojson
 
 Parse OSM and Overpass JSON with python.
+__This library is under development!__
 
 ### Usage
 

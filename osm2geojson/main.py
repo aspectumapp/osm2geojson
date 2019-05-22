@@ -125,7 +125,7 @@ def orient_multipolygon(p):
     return geometry.MultiPolygon(p)
 
 
-def way_to_feature(way, refs_index = {}):
+def way_to_feature(way, refs_index = {}, force_polygon = False):
     coords = []
 
     if 'geometry' in way and len(way['geometry']) > 0:
@@ -172,22 +172,9 @@ def way_to_feature(way, refs_index = {}):
         print('Not found coords for way', way)
         return None
 
-    if is_geometry_polygon(way):
-        # better to use shapely to create polygons here
-        if len(coords) < 4:
-            print('Not found coords for way (polygon)', way)
-            return None
-
-        # complete some polygons
-        first = coords[0]
-        last = coords[-1]
-        if last[0] != first[0] or last[1] != first[1]:
-            coords.append(first)
-
-        return to_feature({
-            'type': 'Polygon',
-            'coordinates': [coords]
-        }, get_element_props(way))
+    if force_polygon or is_geometry_polygon(way):
+        f = geometry.mapping(geometry.Polygon(coords))
+        return to_feature(f, get_element_props(way))
     else:
         return to_feature({
             'type': 'LineString',
@@ -207,10 +194,13 @@ def is_geometry_polygon(node):
         if rule['key'] in tags:
             if rule['polygon'] == 'all':
                 return True
-            if 'whitelist' in rule and tags[rule['key']] in rule['values']:
+            if rule['polygon'] == 'whitelist' and tags[rule['key']] in rule['values']:
                 return True
-            if 'blacklist' in rule and tags[rule['key']] in rule['values']:
-                return False
+            if rule['polygon'] == 'blacklist':
+                if tags[rule['key']] in rule['values']:
+                    return False
+                else:
+                    return True
     return False
 
 
@@ -258,7 +248,7 @@ def multipolygon_relation_to_feature(rel, refs_index):
 
         member['used'] = rel['id']
 
-        way_feature = way_to_feature(member, refs_index)
+        way_feature = way_to_feature(member, refs_index, True)
         if way_feature is None:
             # throw exception
             print('Failed to make way', member, 'in relation', rel)
