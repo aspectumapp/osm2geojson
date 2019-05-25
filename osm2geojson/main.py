@@ -140,6 +140,7 @@ def way_to_feature(way, refs_index = {}):
                 coords.append([node['lon'], node['lat']])
             else:
                 print('Node not found in index', ref, 'for way', way)
+                return None
 
     elif 'ref' in way:
         if way['ref'] not in refs_index:
@@ -173,8 +174,12 @@ def way_to_feature(way, refs_index = {}):
         return None
 
     if is_geometry_polygon(way):
-        f = geometry.mapping(geometry.Polygon(coords))
-        return to_feature(f, get_element_props(way))
+        try:
+            f = geometry.mapping(geometry.Polygon(coords))
+            return to_feature(f, get_element_props(way))
+        except:
+            print('Failed to generate polygon from way', way)
+            return None
     else:
         return to_feature({
             'type': 'LineString',
