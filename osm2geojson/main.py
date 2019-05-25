@@ -125,7 +125,7 @@ def orient_multipolygon(p):
     return geometry.MultiPolygon(p)
 
 
-def way_to_feature(way, refs_index = {}, force_polygon = False):
+def way_to_feature(way, refs_index = {}):
     coords = []
 
     if 'geometry' in way and len(way['geometry']) > 0:
@@ -172,7 +172,7 @@ def way_to_feature(way, refs_index = {}, force_polygon = False):
         print('Not found coords for way', way)
         return None
 
-    if force_polygon or is_geometry_polygon(way):
+    if is_geometry_polygon(way):
         f = geometry.mapping(geometry.Polygon(coords))
         return to_feature(f, get_element_props(way))
     else:
@@ -248,7 +248,7 @@ def multipolygon_relation_to_feature(rel, refs_index):
 
         member['used'] = rel['id']
 
-        way_feature = way_to_feature(member, refs_index, True)
+        way_feature = way_to_feature(member, refs_index)
         if way_feature is None:
             # throw exception
             print('Failed to make way', member, 'in relation', rel)
