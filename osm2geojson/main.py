@@ -9,7 +9,6 @@ polygon_features_file = os.path.join(dirname, './polygon-features.json')
 with open(polygon_features_file) as data:
     polygon_features = json.loads(data.read())
 
-
 def json2geojson(data):
     if isinstance(data, str):
         data = json.loads(data)
@@ -194,6 +193,9 @@ def is_geometry_polygon(node):
 
     if 'type' in tags and tags['type'] == 'multipolygon':
         return True
+
+    if 'area' in tags and tags['area'] == 'no':
+        return False
 
     for rule in polygon_features:
         if rule['key'] in tags:
