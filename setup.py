@@ -7,7 +7,7 @@ with open(path.join(dirname, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='osm2geojson',
-    version='0.1.6',
+    version='0.1.7',
     license='MIT',
     description='Parse OSM and Overpass JSON',
     long_description=long_description,
