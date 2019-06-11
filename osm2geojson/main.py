@@ -9,6 +9,12 @@ polygon_features_file = os.path.join(dirname, './polygon-features.json')
 with open(polygon_features_file) as data:
     polygon_features = json.loads(data.read())
 
+log = open('log.log', 'a')
+def print(*args):
+    if len(args) > 0 and isinstance(args[0], str):
+        log.write(args[0] + '\n')
+    return None
+
 def json2geojson(data):
     if isinstance(data, str):
         data = json.loads(data)
@@ -89,13 +95,13 @@ def get_element_props(el, keys = ['type', 'id', 'tags']):
 
 
 def convert_coords_to_lists(coords):
-    if len(coords) < 0:
-        return []
+    new_coords = list()
+    if len(coords) < 1:
+        return new_coords
 
     if isinstance(coords[0], float):
         return list(coords)
 
-    new_coords = list()
     for c in coords:
         new_coords.append(convert_coords_to_lists(c))
     return new_coords
@@ -122,6 +128,15 @@ def multipolygon_to_feature(p, props = {}):
 def orient_multipolygon(p):
     p = [geometry.polygon.orient(geom, sign=-1.0) for geom in p.geoms]
     return geometry.MultiPolygon(p)
+
+
+def fix_invalid_polygon(p):
+    if not p.is_valid:
+        print('Invalid geometry! Try to fix with 0 buffer')
+        p = p.buffer(0)
+        if p.is_valid:
+            print('Geometry fixed!')
+    return p
 
 
 def way_to_feature(way, refs_index = {}):
@@ -174,7 +189,8 @@ def way_to_feature(way, refs_index = {}):
 
     if is_geometry_polygon(way):
         try:
-            f = geometry.mapping(geometry.Polygon(coords))
+            poly = fix_invalid_polygon(geometry.Polygon(coords))
+            f = geometry.mapping(poly)
             return to_feature(f, get_element_props(way))
         except:
             print('Failed to generate polygon from way', way)
@@ -222,7 +238,7 @@ def multiline_realation_to_feature(rel, refs_index):
     lines = []
     for member in rel['members']:
         if member['type'] != 'way':
-            print('member not handled', member)
+            print('multiline member not handled', member)
             continue
 
         way_feature = way_to_feature(member, refs_index)
@@ -250,7 +266,7 @@ def multipolygon_relation_to_feature(rel, refs_index):
 
     for member in rel['members']:
         if member['type'] != 'way':
-            print('member not handled', member)
+            print('multipolygon member not handled', member)
             continue
 
         member['used'] = rel['id']
@@ -274,6 +290,8 @@ def multipolygon_relation_to_feature(rel, refs_index):
     if multipolygon is None:
         print('Relation not converted to feature', rel)
         return None
+    multipolygon = fix_invalid_polygon(multipolygon)
+    multipolygon = to_multipolygon(multipolygon)
     return multipolygon_to_feature(multipolygon, get_element_props(rel))
 
 
