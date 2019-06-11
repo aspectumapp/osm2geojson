@@ -1,5 +1,6 @@
 from .parse_xml import parse as parse_xml
 from shapely import geometry, ops
+import traceback
 import json
 import os
 
@@ -335,7 +336,13 @@ def _convert_lines_to_multipolygon(lines):
                 # throw exception
                 print('Failed to build polygon', line)
         return merge_polygons_to_multipolygon(polygons)
-    return geometry.MultiPolygon([geometry.Polygon(merged_line)])
+    try:
+        poly = geometry.Polygon(merged_line)
+    except Exception as e:
+        print('Failed to convert lines to polygon', e)
+        traceback.print_exc()
+        return None
+    return geometry.MultiPolygon([poly])
 
 
 def convert_ways_to_multipolygon(outer, inner = []):
