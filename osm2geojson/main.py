@@ -352,8 +352,14 @@ def convert_ways_to_multipolygon(outer, inner = []):
         return None
 
     outer_polygon = _convert_lines_to_multipolygon(outer)
-    if len(inner) < 1:
+    if outer_polygon is None:
+        return None
+
+    if len(inner) < 2:
         return outer_polygon
 
     inner_polygon = _convert_lines_to_multipolygon(inner)
+    if inner_polygon is None:
+        # we need to handle this error in other way
+        return outer_polygon
     return to_multipolygon(outer_polygon.difference(inner_polygon))
