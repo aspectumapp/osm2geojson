@@ -355,7 +355,7 @@ def convert_ways_to_multipolygon(outer, inner = []):
     if outer_polygon is None:
         return None
 
-    if len(inner) < 2:
+    if len(inner) < 1:
         return outer_polygon
 
     inner_polygon = _convert_lines_to_multipolygon(inner)
