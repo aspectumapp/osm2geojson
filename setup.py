@@ -16,6 +16,6 @@ setup(
     author='Parfeniuk Mykola',
     author_email='mikola.parfenyuck@gmail.com',
     packages=['osm2geojson'],
-    package_data={ '': 'osm2geojson/*.json' },
+    package_data={'osm_to_geojson_pkg': ['osm2geojson/*.json']},
     install_requires=['shapely']
 )
