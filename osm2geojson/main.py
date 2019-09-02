@@ -5,16 +5,10 @@ import json
 import os
 
 dirname = os.path.dirname(__file__)
-polygon_features_file = os.path.join(dirname, './polygon-features.json')
+polygon_features_file = os.path.join(dirname, 'polygon-features.json')
 
 with open(polygon_features_file) as data:
     polygon_features = json.loads(data.read())
-
-log = open('log.log', 'a')
-def print(*args):
-    if len(args) > 0 and isinstance(args[0], str):
-        log.write(args[0] + '\n')
-    return None
 
 def json2geojson(data):
     if isinstance(data, str):
