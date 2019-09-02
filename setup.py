@@ -1,5 +1,6 @@
-from setuptools import setup
 from os import path
+
+from setuptools import setup
 
 dirname = path.abspath(path.dirname(__file__))
 with open(path.join(dirname, 'README.md'), encoding='utf-8') as f:
@@ -7,15 +8,15 @@ with open(path.join(dirname, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='osm2geojson',
-    version='0.1.7',
+    version='0.1.8',
     license='MIT',
     description='Parse OSM and Overpass JSON',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    keywords = 'geometry gis osm parsing',
+    keywords='geometry gis osm parsing',
     author='Parfeniuk Mykola',
     author_email='mikola.parfenyuck@gmail.com',
     packages=['osm2geojson'],
-    package_data={ '': 'osm2geojson/*.json' },
+    package_data={'osm_to_geojson_pkg': ['osm2geojson/*.json']},
     install_requires=['shapely']
 )
