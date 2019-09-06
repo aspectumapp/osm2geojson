@@ -34,7 +34,7 @@ geojson = osm2geojson.xml2geojson(xml)
 Clone project with submodules
 
 ```sh
-$ git clone --recurse-submodules https://github.com/eos-vision/osm2geojson.git
+$ git clone --recurse-submodules https://github.com/aspectumapp/osm2geojson.git
 ```
 
 Setup package
