@@ -1,7 +1,7 @@
 # osm2geojson
 
 Parse OSM and Overpass JSON with python.
-__This library is under development!__
+**This library is under development!**
 
 ### Usage
 
@@ -11,12 +11,29 @@ Install this package with pip:
 $ pip install osm2geojson
 ```
 
-If you want to convert OSM xml or Overpass json/xml to Geojson you can import this lib and use one of 2 methods:
+If you want to convert OSM xml or Overpass json/xml to Geojson you can import this lib and use one of 4 methods:
 
- * `json2geojson(dict json_from_overpass)` - to convert Overpass json to Geojson
- * `xml2geojson(str xml_from_osm)` - to convert OSM xml or Overpass xml to Geojson
+- `json2shapes(dict json_from_overpass)` - to convert Overpass json to \*Shape-objects
+- `xml2shapes(str xml_from_osm)` - to convert OSM xml or Overpass xml to \*Shape-objects
+- `json2geojson(dict json_from_overpass)` - to convert Overpass json to Geojson
+- `xml2geojson(str xml_from_osm)` - to convert OSM xml or Overpass xml to Geojson
 
-__Example:__
+**\*Shape-object - for convinience created simple dict to save Shapely object (geometry) and OSM-properties. Structure of this object:**
+
+```py
+shape_obj = {
+    'shape': Point | LineString | Polygon ...,
+    'properties': {
+        'type': 'relation' | 'node' ...,
+        'tags': { ... },
+        ...
+    }
+}
+```
+
+### Examples
+
+Convert OSM-xml to Geojson:
 
 ```py
 import codecs
@@ -27,6 +44,19 @@ with codecs.open('file.osm', 'r', encoding='utf-8') as data:
 
 geojson = osm2geojson.xml2geojson(xml)
 # >> { "type": "FeatureCollection", "features": [ ... ] }
+```
+
+Convert OSM-json to Shape-objects:
+
+```py
+import codecs
+import osm2geojson
+
+with codecs.open('file.json', 'r', encoding='utf-8') as data:
+    json = data.read()
+
+geojson = osm2geojson.json2shapes(json)
+# >> [ { "shape": <Shapely-object>, "properties": {...} }, ... ]
 ```
 
 ### Development
