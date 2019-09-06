@@ -25,13 +25,13 @@ def xml2geojson(xml_str):
     return _json2geojson(data)
 
 
-def json2shape(data):
+def json2shapes(data):
     if isinstance(data, str):
         data = json.loads(data)
     return _json2shapes(data)
 
 
-def xml2shape(xml_str):
+def xml2shapes(xml_str):
     data = parse_xml(xml_str)
     return _json2shapes(data)
 
