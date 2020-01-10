@@ -261,6 +261,7 @@ def multiline_realation_to_shape(rel, refs_index):
         if member['type'] is 'way':
             way_shape = way_to_shape(member, refs_index)
         elif member['type'] is 'relation':
+            refs_index[member['ref']]['used'] = rel['id']
             way_shape = element_to_shape(member, refs_index)
         else:
             print('multiline member not handled', member)
