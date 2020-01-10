@@ -53,7 +53,7 @@ def _json2shapes(data):
 
     refs = []
     for el in data['elements']:
-        if el['type'] in ['node', 'way']:
+        if el['type'] in ['node', 'way', 'relation']:
             refs.append(el)
     refs_index = build_refs_index(refs)
 
@@ -251,12 +251,21 @@ def relation_to_shape(rel, refs_index):
 
 def multiline_realation_to_shape(rel, refs_index):
     lines = []
-    for member in rel['members']:
-        if member['type'] != 'way':
+
+    if 'members' in rel:
+        members = rel['members']
+    else:
+        members = refs_index[rel['ref']]['members']
+
+    for member in members:
+        if member['type'] is 'way':
+            way_shape = way_to_shape(member, refs_index)
+        elif member['type'] is 'relation':
+            way_shape = element_to_shape(member, refs_index)
+        else:
             print('multiline member not handled', member)
             continue
 
-        way_shape = way_to_shape(member, refs_index)
         if way_shape is None:
             # throw exception
             print('Failed to make way in relation', rel)
@@ -281,7 +290,12 @@ def multipolygon_relation_to_shape(rel, refs_index):
     inner = []
     outer = []
 
-    for member in rel['members']:
+    if 'members' in rel:
+        members = rel['members']
+    else:
+        members = refs_index[rel['ref']]['members']
+
+    for member in members:
         if member['type'] != 'way':
             print('multipolygon member not handled', member)
             continue
