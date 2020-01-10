@@ -76,7 +76,7 @@ $ python setup.py develop
 Run tests
 
 ```sh
-$ python -m unittest discover
+$ python -m unittest tests
 ```
 
 Update osm-polygon-features to last version (if you want last version)

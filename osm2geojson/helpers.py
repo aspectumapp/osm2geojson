@@ -26,7 +26,7 @@ def retry_request_multi(max_retries):
 def overpass_call(query):
     encoded = urllib.parse.quote(query.encode("utf-8"), safe='~()*!.\'')
     r = requests.post(OVERPASS,
-                      data=f"data={encoded}",
+                      data="data={}".format(encoded),
                       headers={"Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"})
     if not r.status_code is 200:
         raise requests.exceptions.HTTPError('Overpass server respond with status '+str(r.status_code))

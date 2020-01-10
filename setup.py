@@ -8,7 +8,7 @@ with open(path.join(dirname, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='osm2geojson',
-    version='0.1.13',
+    version='0.1.14',
     license='MIT',
     description='Parse OSM and Overpass JSON',
     long_description=long_description,
@@ -19,5 +19,5 @@ setup(
     packages=['osm2geojson'],
     package_data={'osm_to_geojson_pkg': ['osm2geojson/*.json']},
     include_package_data=True,
-    install_requires=['shapely', 'requests']
+    install_requires=['shapely', 'requests>=2.21.0']
 )
