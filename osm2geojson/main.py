@@ -230,6 +230,19 @@ def is_exception(node):
 
 
 def is_geometry_polygon(node):
+    if 'tags' not in node:
+        return False
+    tags = node['tags']
+
+    if 'area' in tags and tags['area'] == 'no':
+        return False
+
+    if 'area' in tags and tags['area'] == 'yes':
+        return True
+
+    if 'type' in tags and tags['type'] == 'multipolygon':
+        return True
+
     is_polygon = is_geometry_polygon_without_exceptions(node)
     if is_polygon:
         return not is_exception(node)
@@ -237,16 +250,7 @@ def is_geometry_polygon(node):
         return False
 
 def is_geometry_polygon_without_exceptions(node):
-    if 'tags' not in node:
-        return False
     tags = node['tags']
-
-    if 'type' in tags and tags['type'] == 'multipolygon':
-        return True
-
-    if 'area' in tags and tags['area'] == 'no':
-        return False
-
     for rule in polygon_features:
         if rule['key'] in tags:
             if rule['polygon'] == 'all':
