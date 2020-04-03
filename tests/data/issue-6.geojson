@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "way",
+        "id": 155575971,
+        "tags": {
+          "bench": "yes",
+          "covered": "yes",
+          "highway": "platform",
+          "name": "Thalwil Zentrum",
+          "public_transport": "platform",
+          "shelter": "yes"
+        }
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.5642032,
+            47.2946705
+          ],
+          [
+            8.5643781,
+            47.2948068
+          ]
+        ]
+      }
+    }
+  ]
+}

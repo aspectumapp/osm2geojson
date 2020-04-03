@@ -3,12 +3,19 @@ import json
 import os
 
 from .parse_xml import read_data_file
-from osm2geojson import overpass_call, xml2geojson
+from osm2geojson import overpass_call, xml2geojson, json2geojson
 
 def get_osm_and_geojson_data(name):
     xml_data = read_data_file(name + '.osm')
     geojson_data = read_data_file(name + '.geojson')
     data = xml2geojson(xml_data)
+    saved_geojson = json.loads(geojson_data)
+    return (data, saved_geojson)
+
+def get_json_and_geojson_data(name):
+    json_data = read_data_file(name + '.json')
+    geojson_data = read_data_file(name + '.geojson')
+    data = json.loads(json_data)
     saved_geojson = json.loads(geojson_data)
     return (data, saved_geojson)
 
@@ -32,6 +39,10 @@ class TestOsm2GeoJsonMethods(unittest.TestCase):
     def test_issue_4(self):
         (data, saved_geojson) = get_osm_and_geojson_data('issue-4')
         self.assertDictEqual(saved_geojson, data)
+
+    def test_issue_6(self):
+        (data, saved_geojson) = get_json_and_geojson_data('issue-6')
+        self.assertDictEqual(saved_geojson, json2geojson(data))
 
 if __name__ == '__main__':
     unittest.main()

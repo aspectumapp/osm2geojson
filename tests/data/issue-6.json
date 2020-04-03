@@ -1,0 +1,42 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.56.1002 b121d216",
+  "osm3s": {
+    "timestamp_osm_base": "2020-04-03T06:39:02Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+    {
+      "type": "way",
+      "id": 155575971,
+      "bounds": {
+        "minlat": 47.2946705,
+        "minlon": 8.5642032,
+        "maxlat": 47.2948068,
+        "maxlon": 8.5643781
+      },
+      "nodes": [
+        1679690155,
+        1679690156
+      ],
+      "geometry": [
+        {
+          "lat": 47.2946705,
+          "lon": 8.5642032
+        },
+        {
+          "lat": 47.2948068,
+          "lon": 8.5643781
+        }
+      ],
+      "tags": {
+        "bench": "yes",
+        "covered": "yes",
+        "highway": "platform",
+        "name": "Thalwil Zentrum",
+        "public_transport": "platform",
+        "shelter": "yes"
+      }
+    }
+  ]
+}

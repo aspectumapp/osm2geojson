@@ -10,9 +10,13 @@ import os
 
 dirname = os.path.dirname(__file__)
 polygon_features_file = os.path.join(dirname, 'polygon-features.json')
+area_keys_file = os.path.join(dirname, 'areaKeys.json')
 
 with open(polygon_features_file) as data:
     polygon_features = json.loads(data.read())
+
+with open(area_keys_file) as data:
+    area_keys = json.loads(data.read())['areaKeys']
 
 def json2geojson(data):
     if isinstance(data, str):
@@ -217,7 +221,22 @@ def way_to_shape(way, refs_index = {}):
         }
 
 
+def is_exception(node):
+    for tag in node['tags']:
+        if tag in area_keys:
+            value = node['tags'][tag]
+            return value in area_keys[tag] and area_keys[tag][value]
+    return False
+
+
 def is_geometry_polygon(node):
+    is_polygon = is_geometry_polygon_without_exceptions(node)
+    if is_polygon:
+        return not is_exception(node)
+    else:
+        return False
+
+def is_geometry_polygon_without_exceptions(node):
     if 'tags' not in node:
         return False
     tags = node['tags']
