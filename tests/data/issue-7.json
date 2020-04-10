@@ -1,0 +1,43 @@
+{
+  "version":0.6,
+  "generator":"Overpass API 0.7.56.1002 b121d216",
+  "osm3s":{
+    "timestamp_osm_base":"2020-04-03T06:39:02Z",
+    "copyright":"The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements":[
+    {
+      "type":"way",
+      "id":387345429,
+      "bounds":{
+        "minlat":47.3969601,
+        "minlon":8.5960345,
+        "maxlat":47.3971207,
+        "maxlon":8.5961111
+      },
+      "nodes":[
+        3906444343,
+        3906444348
+      ],
+      "geometry":[
+        {
+          "lat":47.3969601,
+          "lon":8.5960345
+        },
+        {
+          "lat":47.3971207,
+          "lon":8.5961111
+        }
+      ],
+      "tags":{
+        "conveying":"forward",
+        "foot":"yes",
+        "highway":"steps",
+        "incline":"up",
+        "indoor":"yes",
+        "level":"-1",
+        "tunnel":"yes"
+      }
+    }
+  ]
+}

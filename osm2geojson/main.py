@@ -229,6 +229,10 @@ def is_exception(node):
     return False
 
 
+def is_same_coords(a, b):
+    return a['lat'] == b['lat'] and a['lon'] == b['lon']
+
+
 def is_geometry_polygon(node):
     if 'tags' not in node:
         return False
@@ -242,6 +246,10 @@ def is_geometry_polygon(node):
 
     if 'type' in tags and tags['type'] == 'multipolygon':
         return True
+
+    # Fix for issue #7, but should be handled by id-area-keys or osm-polygon-features
+    if 'geometry' in node and not is_same_coords(node['geometry'][0], node['geometry'][-1]):
+        return False
 
     is_polygon = is_geometry_polygon_without_exceptions(node)
     if is_polygon:

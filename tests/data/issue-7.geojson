@@ -1,0 +1,34 @@
+{
+  "type":"FeatureCollection",
+  "features":[
+    {
+      "type":"Feature",
+      "properties":{
+        "type":"way",
+        "id":387345429,
+        "tags":{
+          "conveying":"forward",
+          "foot":"yes",
+          "highway":"steps",
+          "incline":"up",
+          "indoor":"yes",
+          "level":"-1",
+          "tunnel":"yes"
+        }
+      },
+      "geometry":{
+        "type":"LineString",
+        "coordinates":[
+          [
+            8.5960345,
+            47.3969601
+          ],
+          [
+            8.5961111,
+            47.3971207
+          ]
+        ]
+      }
+    }
+  ]
+}
