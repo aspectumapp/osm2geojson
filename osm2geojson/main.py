@@ -248,7 +248,12 @@ def is_geometry_polygon(node):
         return True
 
     # Fix for issue #7, but should be handled by id-area-keys or osm-polygon-features
+    # For example https://github.com/tyrasd/osm-polygon-features/issues/5
     if 'geometry' in node and not is_same_coords(node['geometry'][0], node['geometry'][-1]):
+        return False
+
+    # For issue #7 and situation with barrier=wall
+    if 'nodes' in node and node['nodes'][0] != node['nodes'][-1]:
         return False
 
     is_polygon = is_geometry_polygon_without_exceptions(node)

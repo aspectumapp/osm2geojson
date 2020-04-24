@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "way",
+        "id": 43934658,
+        "tags": {
+          "attribution": "Natural Resources Canada",
+          "barrier": "wall",
+          "canvec:CODE": "2240021",
+          "canvec:UUID": "11CF457637C4E5F4E0409C8467120387",
+          "source": "CanVec_Import_2009"
+        }
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -79.3698231,
+            43.7749317
+          ],
+          [
+            -79.3694115,
+            43.7744942
+          ],
+          [
+            -79.3691393,
+            43.7738156
+          ],
+          [
+            -79.368756,
+            43.7717787
+          ]
+        ]
+      }
+    }
+  ]
+}

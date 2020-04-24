@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="Overpass API 0.7.56.1004 6cd3eaec">
+<note>The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.</note>
+<meta osm_base="2020-04-24T08:37:02Z"/>
+  <node id="558708287" lat="43.7749317" lon="-79.3698231"/>
+  <node id="558708288" lat="43.7744942" lon="-79.3694115"/>
+  <node id="558708289" lat="43.7738156" lon="-79.3691393"/>
+  <node id="558708290" lat="43.7717787" lon="-79.3687560"/>
+  <way id="43934658" visible="true" version="1" changeset="3053910" timestamp="2009-11-07T08:33:58Z" user="andrewpmk" uid="1679">
+    <nd ref="558708287"/>
+    <nd ref="558708288"/>
+    <nd ref="558708289"/>
+    <nd ref="558708290"/>
+    <tag k="attribution" v="Natural Resources Canada"/>
+    <tag k="barrier" v="wall"/>
+    <tag k="canvec:CODE" v="2240021"/>
+    <tag k="canvec:UUID" v="11CF457637C4E5F4E0409C8467120387"/>
+    <tag k="source" v="CanVec_Import_2009"/>
+  </way>
+</osm>

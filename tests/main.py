@@ -48,5 +48,11 @@ class TestOsm2GeoJsonMethods(unittest.TestCase):
         (data, saved_geojson) = get_json_and_geojson_data('issue-7')
         self.assertDictEqual(saved_geojson, json2geojson(data))
 
+    def test_barrier_wall(self):
+        # https://wiki.openstreetmap.org/wiki/Tag:barrier%3Dwall
+        (data, saved_geojson) = get_osm_and_geojson_data('barrier-wall')
+        self.assertEqual(data['features'][0]['geometry']['type'], 'LineString')
+        self.assertDictEqual(saved_geojson, data)
+
 if __name__ == '__main__':
     unittest.main()
