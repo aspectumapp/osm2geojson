@@ -1,6 +1,7 @@
 from functools import wraps
 import requests
 import urllib
+import time
 
 OVERPASS = "https://overpass-api.de/api/interpreter/"
 
@@ -28,6 +29,6 @@ def overpass_call(query):
     r = requests.post(OVERPASS,
                       data="data={}".format(encoded),
                       headers={"Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"})
-    if not r.status_code is 200:
+    if not r.status_code == 200:
         raise requests.exceptions.HTTPError('Overpass server respond with status '+str(r.status_code))
     return r.text

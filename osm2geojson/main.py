@@ -294,9 +294,9 @@ def multiline_realation_to_shape(rel, refs_index):
         members = refs_index[rel['ref']]['members']
 
     for member in members:
-        if member['type'] is 'way':
+        if member['type'] == 'way':
             way_shape = way_to_shape(member, refs_index)
-        elif member['type'] is 'relation':
+        elif member['type'] == 'relation':
             refs_index[member['ref']]['used'] = rel['id']
             way_shape = element_to_shape(member, refs_index)
         else:
@@ -310,7 +310,7 @@ def multiline_realation_to_shape(rel, refs_index):
 
         if isinstance(way_shape['shape'], Polygon):
             # this should not happen on real data
-            way_shape['shape'] = LineString(way.exterior.coords)
+            way_shape['shape'] = LineString(way_shape['shape'].exterior.coords)
         lines.append(way_shape['shape'])
     if len(lines) < 1:
         return None
