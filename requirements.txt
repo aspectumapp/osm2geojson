@@ -1,0 +1,2 @@
+shapely
+requests
