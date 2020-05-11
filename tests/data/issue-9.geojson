@@ -1,0 +1,44 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "way",
+        "id": 361110018,
+        "tags": {
+          "source": "yahoo satellite"
+        }
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            7.1823979,
+            50.7430368
+          ],
+          [
+            7.1818215,
+            50.7425134
+          ],
+          [
+            7.1815196,
+            50.7425764
+          ],
+          [
+            7.1813173,
+            50.7426186
+          ],
+          [
+            7.1809006,
+            50.7427531
+          ],
+          [
+            7.1814061,
+            50.7435033
+          ]
+        ]
+      }
+    }
+  ]
+}

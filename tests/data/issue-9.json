@@ -1,0 +1,64 @@
+{
+  "version":0.6,
+  "generator":"Overpass API 0.7.56.1004 6cd3eaec",
+  "osm3s":{
+    "timestamp_osm_base":"2020-05-11T11:11:02Z",
+    "copyright":"The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements":[
+    {
+      "type":"node",
+      "id":98939159,
+      "lat":50.7430368,
+      "lon":7.1823979
+    },
+    {
+      "type":"node",
+      "id":603010137,
+      "lat":50.7425134,
+      "lon":7.1818215
+    },
+    {
+      "type":"node",
+      "id":6038685227,
+      "lat":50.7425764,
+      "lon":7.1815196,
+      "tags":{
+        "barrier":"gate"
+      }
+    },
+    {
+      "type":"node",
+      "id":603010136,
+      "lat":50.7426186,
+      "lon":7.1813173
+    },
+    {
+      "type":"node",
+      "id":603010135,
+      "lat":50.7427531,
+      "lon":7.1809006
+    },
+    {
+      "type":"node",
+      "id":603010113,
+      "lat":50.7435033,
+      "lon":7.1814061
+    },
+    {
+      "type":"way",
+      "id":361110018,
+      "nodes":[
+        98939159,
+        603010137,
+        6038685227,
+        603010136,
+        603010135,
+        603010113
+      ],
+      "tags":{
+        "source":"yahoo satellite"
+      }
+    }
+  ]
+}

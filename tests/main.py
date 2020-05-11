@@ -52,5 +52,11 @@ class TestOsm2GeoJsonMethods(unittest.TestCase):
         self.assertEqual(data['features'][0]['geometry']['type'], 'LineString')
         self.assertDictEqual(saved_geojson, data)
 
+    def test_issue_9(self):
+        (data, saved_geojson) = get_json_and_geojson_data('issue-9')
+        all_geojson = json.loads(read_data_file('issue-9-all.geojson'))
+        self.assertDictEqual(saved_geojson, json2geojson(data))
+        self.assertDictEqual(all_geojson, json2geojson(data, filter_used_refs=False))
+
 if __name__ == '__main__':
     unittest.main()

@@ -18,31 +18,31 @@ with open(polygon_features_file) as data:
 with open(area_keys_file) as data:
     area_keys = json.loads(data.read())['areaKeys']
 
-def json2geojson(data):
+def json2geojson(data, filter_used_refs=True):
     if isinstance(data, str):
         data = json.loads(data)
-    return _json2geojson(data)
+    return _json2geojson(data, filter_used_refs)
 
 
-def xml2geojson(xml_str):
+def xml2geojson(xml_str, filter_used_refs=True):
     data = parse_xml(xml_str)
-    return _json2geojson(data)
+    return _json2geojson(data, filter_used_refs)
 
 
-def json2shapes(data):
+def json2shapes(data, filter_used_refs=True):
     if isinstance(data, str):
         data = json.loads(data)
-    return _json2shapes(data)
+    return _json2shapes(data, filter_used_refs)
 
 
-def xml2shapes(xml_str):
+def xml2shapes(xml_str, filter_used_refs=True):
     data = parse_xml(xml_str)
-    return _json2shapes(data)
+    return _json2shapes(data, filter_used_refs)
 
 
-def _json2geojson(data):
+def _json2geojson(data, filter_used_refs=True):
     features = []
-    for shape in _json2shapes(data):
+    for shape in _json2shapes(data, filter_used_refs):
         feature = shape_to_feature(shape['shape'], shape['properties'])
         features.append(feature)
 
@@ -52,7 +52,7 @@ def _json2geojson(data):
     }
 
 
-def _json2shapes(data):
+def _json2shapes(data, filter_used_refs=True):
     shapes = []
 
     refs = []
@@ -67,6 +67,9 @@ def _json2shapes(data):
             shapes.append(shape)
         else:
             print('Element not converted', el)
+
+    if not filter_used_refs:
+        return shapes
 
     used = {}
     for ref in refs:
