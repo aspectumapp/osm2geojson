@@ -1,5 +1,7 @@
 # osm2geojson
 
+![Test package](https://github.com/aspectumapp/osm2geojson/workflows/Test%20package/badge.svg)
+
 Parse OSM and Overpass JSON with python.
 **This library is under development!**
 
