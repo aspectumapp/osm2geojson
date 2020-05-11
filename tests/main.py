@@ -1,9 +1,7 @@
 import unittest
 import json
-import os
 
-from .parse_xml import read_data_file
-from osm2geojson import overpass_call, xml2geojson, json2geojson
+from osm2geojson import overpass_call, read_data_file, xml2geojson, json2geojson
 
 def get_osm_and_geojson_data(name):
     xml_data = read_data_file(name + '.osm')

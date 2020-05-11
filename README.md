@@ -81,6 +81,12 @@ Run tests
 $ python -m unittest tests
 ```
 
+Run single test
+
+```sh
+$ python tests/main.py TestOsm2GeoJsonMethods.test_barrier_wall
+```
+
 Update osm-polygon-features to last version (if you want last version)
 
 ```sh

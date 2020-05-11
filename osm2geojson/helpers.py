@@ -1,9 +1,17 @@
 from functools import wraps
 import requests
+import codecs
 import urllib
 import time
+import os
 
 OVERPASS = "https://overpass-api.de/api/interpreter/"
+dirname = os.path.dirname(os.path.dirname(__file__))
+
+def read_data_file(name):
+    path = os.path.join(dirname, 'tests/data', name)
+    with codecs.open(path, 'r', encoding='utf-8') as data:
+        return data.read()
 
 def retry_request_multi(max_retries):
     def retry(func):

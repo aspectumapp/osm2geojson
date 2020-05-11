@@ -1,16 +1,7 @@
 import unittest
-import codecs
 import json
-import os
 
-from osm2geojson import parse_xml, overpass_call
-
-dirname = os.path.dirname(__file__)
-
-def read_data_file(name):
-    path = os.path.join(dirname, 'data', name)
-    with codecs.open(path, 'r', encoding='utf-8') as data:
-        return data.read()
+from osm2geojson import parse_xml, overpass_call, read_data_file
 
 class TestParseXmlMethods(unittest.TestCase):
     def test_empty_tag(self):
