@@ -26,6 +26,10 @@ def warning(*args):
     logger.warning(' '.join(args))
 
 
+def error(*args):
+    logger.error(' '.join(args))
+
+
 def json2geojson(data, filter_used_refs=True, log_level='ERROR'):
     if isinstance(data, str):
         data = json.loads(data)
@@ -291,10 +295,13 @@ def is_geometry_polygon_without_exceptions(node):
 
 
 def relation_to_shape(rel, refs_index):
-    if is_geometry_polygon(rel):
-        return multipolygon_relation_to_shape(rel, refs_index)
-    else:
-        return multiline_realation_to_shape(rel, refs_index)
+    try:
+        if is_geometry_polygon(rel):
+            return multipolygon_relation_to_shape(rel, refs_index)
+        else:
+            return multiline_realation_to_shape(rel, refs_index)
+    except:
+        error('Failed to convert relation to shape', pformat(rel))
 
 
 def multiline_realation_to_shape(rel, refs_index):

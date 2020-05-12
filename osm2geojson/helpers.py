@@ -2,7 +2,7 @@ from functools import wraps
 import requests
 import codecs
 import urllib
-import time
+from time import sleep
 import os
 
 OVERPASS = "https://overpass-api.de/api/interpreter/"
@@ -26,7 +26,7 @@ def retry_request_multi(max_retries):
                     if num_retries == max_retries:
                         raise
                     num_retries += 1
-                    time.sleep(5)
+                    sleep(5)
             return ret
         return wrapper
     return retry
