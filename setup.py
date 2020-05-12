@@ -17,7 +17,7 @@ def load_requirements(fname):
 
 setup(
     name='osm2geojson',
-    version='0.1.22',
+    version='0.1.23',
     license='MIT',
     description='Parse OSM and Overpass JSON',
     long_description=long_description,

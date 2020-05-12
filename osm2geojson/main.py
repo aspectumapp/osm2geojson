@@ -5,9 +5,12 @@ from shapely.geometry import (
 )
 from shapely.geometry.polygon import orient
 import traceback
+from pprint import pformat
+import logging
 import json
 import os
 
+logger = logging.getLogger(__name__)
 dirname = os.path.dirname(__file__)
 polygon_features_file = os.path.join(dirname, 'polygon-features.json')
 area_keys_file = os.path.join(dirname, 'areaKeys.json')
@@ -18,29 +21,34 @@ with open(polygon_features_file) as data:
 with open(area_keys_file) as data:
     area_keys = json.loads(data.read())['areaKeys']
 
-def json2geojson(data, filter_used_refs=True):
+
+def warning(*args):
+    logger.warning(' '.join(args))
+
+
+def json2geojson(data, filter_used_refs=True, log_level='ERROR'):
     if isinstance(data, str):
         data = json.loads(data)
     return _json2geojson(data, filter_used_refs)
 
 
-def xml2geojson(xml_str, filter_used_refs=True):
+def xml2geojson(xml_str, filter_used_refs=True, log_level='ERROR'):
     data = parse_xml(xml_str)
     return _json2geojson(data, filter_used_refs)
 
 
-def json2shapes(data, filter_used_refs=True):
+def json2shapes(data, filter_used_refs=True, log_level='ERROR'):
     if isinstance(data, str):
         data = json.loads(data)
     return _json2shapes(data, filter_used_refs)
 
 
-def xml2shapes(xml_str, filter_used_refs=True):
+def xml2shapes(xml_str, filter_used_refs=True, log_level='ERROR'):
     data = parse_xml(xml_str)
     return _json2shapes(data, filter_used_refs)
 
 
-def _json2geojson(data, filter_used_refs=True):
+def _json2geojson(data, filter_used_refs=True, log_level='ERROR'):
     features = []
     for shape in _json2shapes(data, filter_used_refs):
         feature = shape_to_feature(shape['shape'], shape['properties'])
@@ -52,7 +60,8 @@ def _json2geojson(data, filter_used_refs=True):
     }
 
 
-def _json2shapes(data, filter_used_refs=True):
+def _json2shapes(data, filter_used_refs=True, log_level='ERROR'):
+    logger.setLevel(log_level)
     shapes = []
 
     refs = []
@@ -66,7 +75,7 @@ def _json2shapes(data, filter_used_refs=True):
         if shape is not None:
             shapes.append(shape)
         else:
-            print('Element not converted', el)
+            warning('Element not converted', pformat(el))
 
     if not filter_used_refs:
         return shapes
@@ -79,7 +88,7 @@ def _json2shapes(data, filter_used_refs=True):
     filtered_shapes = []
     for shape in shapes:
         if 'properties' not in shape:
-            print(shape)
+            warning('Shape without props', pformat(shape))
         if shape['properties']['id'] in used:
             continue
         filtered_shapes.append(shape)
@@ -151,10 +160,10 @@ def orient_multipolygon(p):
 
 def fix_invalid_polygon(p):
     if not p.is_valid:
-        print('Invalid geometry! Try to fix with 0 buffer')
+        logger.info('Invalid geometry! Try to fix with 0 buffer')
         p = p.buffer(0)
         if p.is_valid:
-            print('Geometry fixed!')
+            logger.info('Geometry fixed!')
     return p
 
 
@@ -172,12 +181,12 @@ def way_to_shape(way, refs_index = {}):
                 node['used'] = way['id']
                 coords.append([node['lon'], node['lat']])
             else:
-                print('Node not found in index', ref, 'for way', way)
+                warning('Node not found in index', pformat(ref), 'for way', pformat(way))
                 return None
 
     elif 'ref' in way:
         if way['ref'] not in refs_index:
-            print('Ref for way not found in index', way)
+            warning('Ref for way not found in index', pformat(way))
             return None
 
         ref = refs_index[way['ref']]
@@ -187,10 +196,10 @@ def way_to_shape(way, refs_index = {}):
             ref['used'] = way['used']
         else:
             # filter will not work for this situation
-            print('Failed to mark ref as used', ref, 'for way', way)
+            warning('Failed to mark ref as used', pformat(ref), 'for way', pformat(way))
         ref_way = way_to_shape(ref, refs_index)
         if ref_way is None:
-            print('Way by ref not converted to shape', way)
+            warning('Way by ref not converted to shape', pformat(way))
             return None
         if isinstance(ref_way['shape'], Polygon):
             coords = ref_way['shape'].exterior.coords
@@ -199,11 +208,11 @@ def way_to_shape(way, refs_index = {}):
 
     else:
         # throw exception
-        print('Relation has way without nodes', way)
+        warning('Relation has way without nodes', pformat(way))
         return None
 
     if len(coords) < 2:
-        print('Not found coords for way', way)
+        warning('Not found coords for way', pformat(way))
         return None
 
     props = get_element_props(way)
@@ -215,7 +224,7 @@ def way_to_shape(way, refs_index = {}):
                 'properties': props
             }
         except:
-            print('Failed to generate polygon from way', way)
+            warning('Failed to generate polygon from way', pformat(way))
             return None
     else:
         return {
@@ -303,12 +312,12 @@ def multiline_realation_to_shape(rel, refs_index):
             refs_index[member['ref']]['used'] = rel['id']
             way_shape = element_to_shape(member, refs_index)
         else:
-            print('multiline member not handled', member)
+            warning('multiline member not handled', pformat(member))
             continue
 
         if way_shape is None:
             # throw exception
-            print('Failed to make way in relation', rel)
+            warning('Failed to make way in relation', pformat(rel))
             continue
 
         if isinstance(way_shape['shape'], Polygon):
@@ -337,7 +346,7 @@ def multipolygon_relation_to_shape(rel, refs_index):
 
     for member in members:
         if member['type'] != 'way':
-            print('multipolygon member not handled', member)
+            warning('Multipolygon member not handled', pformat(member))
             continue
 
         member['used'] = rel['id']
@@ -345,7 +354,7 @@ def multipolygon_relation_to_shape(rel, refs_index):
         way_shape = way_to_shape(member, refs_index)
         if way_shape is None:
             # throw exception
-            print('Failed to make way', member, 'in relation', rel)
+            warning('Failed to make way', pformat(member), 'in relation', pformat(rel))
             continue
 
         if isinstance(way_shape['shape'], Polygon):
@@ -358,7 +367,7 @@ def multipolygon_relation_to_shape(rel, refs_index):
 
     multipolygon = convert_ways_to_multipolygon(outer, inner)
     if multipolygon is None:
-        print('Relation not converted to feature', rel)
+        warning('Relation not converted to feature', pformat(rel))
         return None
 
     multipolygon = fix_invalid_polygon(multipolygon)
@@ -386,7 +395,7 @@ def to_multipolygon(obj):
         return MultiPolygon([obj])
 
     # throw exception
-    print('Failed to convert to multipolygon', type(obj))
+    warning('Failed to convert to multipolygon', type(obj))
     return None
 
 
@@ -404,13 +413,13 @@ def _convert_lines_to_multipolygon(lines):
                     polygons.append(poly.buffer(0))
             except:
                 # throw exception
-                print('Failed to build polygon', line)
+                warning('Failed to build polygon', pformat(line))
         return to_multipolygon(cascaded_union(polygons))
     try:
         poly = Polygon(merged_line)
     except Exception as e:
-        print('Failed to convert lines to polygon', e)
-        traceback.print_exc()
+        warning('Failed to convert lines to polygon', pformat(e))
+        # traceback.print_exc()
         return None
     return to_multipolygon(poly)
 
@@ -418,7 +427,7 @@ def _convert_lines_to_multipolygon(lines):
 def convert_ways_to_multipolygon(outer, inner = []):
     if len(outer) < 1:
         # throw exception
-        print('Ways not found')
+        warning('Ways not found')
         return None
 
     outer_polygon = _convert_lines_to_multipolygon(outer)

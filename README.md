@@ -20,6 +20,11 @@ If you want to convert OSM xml or Overpass json/xml to Geojson you can import th
 - `json2geojson(dict json_from_overpass)` - to convert Overpass json to Geojson
 - `xml2geojson(str xml_from_osm)` - to convert OSM xml or Overpass xml to Geojson
 
+Additional parameters for all functions:
+
+- `filter_used_refs` - (default: `True`) defines geometry filtration strategy (will return all geometry if set as `False`)
+- `log_level` - (default: `'ERROR'`) controlls logging level (will print all logs if set as `'INFO'`). More details [here](https://docs.python.org/3/library/logging.html#logging-levels)
+
 **\*Shape-object - for convinience created simple dict to save Shapely object (geometry) and OSM-properties. Structure of this object:**
 
 ```py
@@ -44,7 +49,7 @@ import osm2geojson
 with codecs.open('file.osm', 'r', encoding='utf-8') as data:
     xml = data.read()
 
-geojson = osm2geojson.xml2geojson(xml)
+geojson = osm2geojson.xml2geojson(xml, filter_used_refs=False, log_level='INFO')
 # >> { "type": "FeatureCollection", "features": [ ... ] }
 ```
 
