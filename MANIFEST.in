@@ -1,2 +1,3 @@
 include osm2geojson/polygon-features.json
 include osm2geojson/areaKeys.json
+include requirements.txt
