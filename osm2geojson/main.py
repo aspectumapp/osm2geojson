@@ -33,28 +33,28 @@ def error(*args):
 def json2geojson(data, filter_used_refs=True, log_level='ERROR'):
     if isinstance(data, str):
         data = json.loads(data)
-    return _json2geojson(data, filter_used_refs)
+    return _json2geojson(data, filter_used_refs, log_level)
 
 
 def xml2geojson(xml_str, filter_used_refs=True, log_level='ERROR'):
     data = parse_xml(xml_str)
-    return _json2geojson(data, filter_used_refs)
+    return _json2geojson(data, filter_used_refs, log_level)
 
 
 def json2shapes(data, filter_used_refs=True, log_level='ERROR'):
     if isinstance(data, str):
         data = json.loads(data)
-    return _json2shapes(data, filter_used_refs)
+    return _json2shapes(data, filter_used_refs, log_level)
 
 
 def xml2shapes(xml_str, filter_used_refs=True, log_level='ERROR'):
     data = parse_xml(xml_str)
-    return _json2shapes(data, filter_used_refs)
+    return _json2shapes(data, filter_used_refs, log_level)
 
 
 def _json2geojson(data, filter_used_refs=True, log_level='ERROR'):
     features = []
-    for shape in _json2shapes(data, filter_used_refs):
+    for shape in _json2shapes(data, filter_used_refs, log_level):
         feature = shape_to_feature(shape['shape'], shape['properties'])
         features.append(feature)
 
