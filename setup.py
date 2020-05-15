@@ -25,6 +25,7 @@ setup(
     keywords='geometry gis osm parsing',
     author='Parfeniuk Mykola',
     author_email='mikola.parfenyuck@gmail.com',
+    url='https://github.com/aspectumapp/osm2geojson',
     packages=['osm2geojson'],
     include_package_data=True,
     install_requires=load_requirements("requirements.txt")
