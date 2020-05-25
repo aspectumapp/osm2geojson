@@ -1,23 +1,17 @@
 from os import path
 from setuptools import setup
-try:
-    # for pip >= 10
-    from pip._internal.req import parse_requirements
-except ImportError:
-    # for pip <= 9.0.3
-    from pip.req import parse_requirements
 
 dirname = path.abspath(path.dirname(__file__))
 with open(path.join(dirname, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-def load_requirements(fname):
-    reqs = parse_requirements(fname, session="test")
-    return [str(ir.req) for ir in reqs]
+def parse_requirements(filename):
+    lines = (line.strip() for line in open(path.join(dirname, filename)))
+    return [line for line in lines if line and not line.startswith("#")]
 
 setup(
     name='osm2geojson',
-    version='0.1.25',
+    version='0.1.26',
     license='MIT',
     description='Parse OSM and Overpass JSON',
     long_description=long_description,
@@ -28,5 +22,5 @@ setup(
     url='https://github.com/aspectumapp/osm2geojson',
     packages=['osm2geojson'],
     include_package_data=True,
-    install_requires=load_requirements("requirements.txt")
+    install_requires=parse_requirements("requirements.txt")
 )
