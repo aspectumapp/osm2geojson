@@ -110,7 +110,6 @@ class TestParseXmlMethods(unittest.TestCase):
             'rel(448930); out count;'
         ]
 
-        print()
         for query in queries:
             print('Test query:', query)
             query_json = '[out:json];' + query
@@ -121,6 +120,9 @@ class TestParseXmlMethods(unittest.TestCase):
             # Ignore different time for queries
             del overpass_json['osm3s']['timestamp_osm_base']
             del parsed_json['osm3s']['timestamp_osm_base']
+            # Ignore generator (overpass use different versions of generators?)
+            del overpass_json['generator']
+            del parsed_json['generator']
             self.assertDictEqual(overpass_json, parsed_json)
 
 if __name__ == '__main__':
