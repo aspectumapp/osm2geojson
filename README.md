@@ -25,6 +25,11 @@ Additional parameters for all functions:
 - `filter_used_refs` - (default: `True`) defines geometry filtration strategy (will return all geometry if set as `False`)
 - `log_level` - (default: `'ERROR'`) controlls logging level (will print all logs if set as `'INFO'`). More details [here](https://docs.python.org/3/library/logging.html#logging-levels)
 
+Other handy methods:
+
+- `overpass_call(str query)` - runs query to overpass-api.de server (retries 5 times in case of error).
+- `shape_to_feature(Shape shape, dict properties)` - Converts Shape-object to GeoJSON with passed properties.
+
 **\*Shape-object - for convinience created simple dict to save Shapely object (geometry) and OSM-properties. Structure of this object:**
 
 ```py
@@ -62,7 +67,7 @@ import osm2geojson
 with codecs.open('file.json', 'r', encoding='utf-8') as data:
     json = data.read()
 
-geojson = osm2geojson.json2shapes(json)
+shapes_with_props = osm2geojson.json2shapes(json)
 # >> [ { "shape": <Shapely-object>, "properties": {...} }, ... ]
 ```
 
