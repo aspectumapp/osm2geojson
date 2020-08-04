@@ -302,13 +302,13 @@ def is_geometry_polygon_without_exceptions(node):
 
 
 def relation_to_shape(rel, refs_index):
-        if 'center' in rel:
-        center = rel['center']
-        return {
-            'shape': Point(center['lon'], center['lat']),
-            'properties': get_element_props(rel)
-        }
-    
+    if 'center' in rel:
+    center = rel['center']
+    return {
+        'shape': Point(center['lon'], center['lat']),
+        'properties': get_element_props(rel)
+    }
+
     try:
         if is_geometry_polygon(rel):
             return multipolygon_relation_to_shape(rel, refs_index)
