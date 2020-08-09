@@ -173,7 +173,7 @@ def fix_invalid_polygon(p):
 
 def way_to_shape(way, refs_index = {}):
     coords = []
-    
+
     if 'center' in way:
         center = way['center']
         return {
