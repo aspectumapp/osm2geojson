@@ -1,0 +1,25 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "way",
+        "id": 4402690
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            13.33121,
+            52.50371
+          ],
+          [
+            13.331418,
+            52.5037526
+          ]
+        ]
+      }
+    }
+  ]
+}

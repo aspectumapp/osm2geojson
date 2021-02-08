@@ -1,0 +1,77 @@
+{
+  "version":0.6,
+  "generator":"Overpass API 0.7.56.7 b85c4387",
+  "osm3s":{
+    "timestamp_osm_base":"2021-02-08T19:17:02Z",
+    "copyright":"The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements":[
+    {
+      "type":"node",
+      "id":26763057,
+      "lat":52.5037100,
+      "lon":13.3312100
+    },
+    {
+      "type":"node",
+      "id":26762979,
+      "lat":52.5037526,
+      "lon":13.3314180
+    },
+    {
+      "type":"node",
+      "id":293547445,
+      "lat":52.4524372,
+      "lon":13.2907973
+    },
+    {
+      "type":"node",
+      "id":293543213,
+      "lat":52.4523788,
+      "lon":13.2906566
+    },
+    {
+      "type":"way",
+      "id":26763057,
+      "nodes":[
+        293543213,
+        293547445,
+        293543213
+      ]
+    },
+    {
+      "type":"way",
+      "id":4402690,
+      "nodes":[
+        26763057,
+        26762979
+      ]
+    },
+    {
+      "type":"relation",
+      "id":6018664,
+      "members":[
+        {
+          "type":"way",
+          "ref":26763057,
+          "role":"inner"
+        }
+      ],
+      "tags":{
+        "addr:city":"Berlin",
+        "addr:country":"DE",
+        "addr:housenumber":"45",
+        "addr:postcode":"14195",
+        "addr:street":"Habelschwerdter Allee",
+        "addr:suburb":"Dahlem",
+        "building":"yes",
+        "contact:website":"http://www.fu-berlin.de/service/orientierung/rosi/index.html",
+        "name":"Silberlaube",
+        "operator":"Freie Universität Berlin",
+        "source":"Geoportal Berlin / k5_2012_sw_sued.zip",
+        "type":"multipolygon",
+        "wheelchair":"yes"
+      }
+    }
+  ]
+}

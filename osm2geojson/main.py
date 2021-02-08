@@ -108,13 +108,38 @@ def element_to_shape(el, refs_index = None):
         return way_to_shape(el, refs_index)
     if t == 'relation':
         return relation_to_shape(el, refs_index)
+    warning('Failed to convert element to shape')
     return None
+
+
+def _get_ref_name(el_type, id):
+    return '%s/%s' % (el_type, id)
+
+
+def get_ref_name(el):
+    return _get_ref_name(el['type'], el['id'])
+
+
+def _get_ref(el_type, id, refs_index):
+    key = _get_ref_name(el_type, id)
+    if key in refs_index:
+        return refs_index[key]
+    warning('Element not found in refs_index', pformat(el_type), pformat(id))
+    return None
+
+
+def get_ref(ref_el, refs_index):
+    return _get_ref(ref_el['type'], ref_el['ref'], refs_index)
+
+
+def get_node_ref(id, refs_index):
+    return _get_ref('node', id, refs_index)
 
 
 def build_refs_index(elements):
     obj = {}
     for el in elements:
-        obj[el['id']] = el
+        obj[get_ref_name(el)] = el
     return obj
 
 
@@ -187,8 +212,8 @@ def way_to_shape(way, refs_index = {}):
 
     elif 'nodes' in way and len(way['nodes']) > 0:
         for ref in way['nodes']:
-            if ref in refs_index:
-                node = refs_index[ref]
+            node = get_node_ref(ref, refs_index)
+            if node:
                 node['used'] = way['id']
                 coords.append([node['lon'], node['lat']])
             else:
@@ -196,11 +221,11 @@ def way_to_shape(way, refs_index = {}):
                 return None
 
     elif 'ref' in way:
-        if way['ref'] not in refs_index:
+        ref = get_ref(way, refs_index)
+        if not ref:
             warning('Ref for way not found in index', pformat(way))
             return None
 
-        ref = refs_index[way['ref']]
         if 'id' in way:
             ref['used'] = way['id']
         elif 'used' in way:
@@ -314,7 +339,8 @@ def relation_to_shape(rel, refs_index):
             return multipolygon_relation_to_shape(rel, refs_index)
         else:
             return multiline_realation_to_shape(rel, refs_index)
-    except:
+    except Exception as e:
+        # traceback.print_exc()
         error('Failed to convert relation to shape', pformat(rel))
 
 
@@ -324,14 +350,19 @@ def multiline_realation_to_shape(rel, refs_index):
     if 'members' in rel:
         members = rel['members']
     else:
-        members = refs_index[rel['ref']]['members']
+        found_ref = get_ref(rel, refs_index)
+        if not found_ref:
+            error('Ref for multiline relation not found in index', pformat(rel))
+            return None
+        members = found_ref['members']
 
     for member in members:
         if member['type'] == 'way':
             way_shape = way_to_shape(member, refs_index)
         elif member['type'] == 'relation':
-            if member['ref'] in refs_index:
-                refs_index[member['ref']]['used'] = rel['id']
+            found_member = get_ref(member, refs_index)
+            if found_member:
+                found_member['used'] = rel['id']
             way_shape = element_to_shape(member, refs_index)
         else:
             warning('multiline member not handled', pformat(member))
@@ -346,7 +377,9 @@ def multiline_realation_to_shape(rel, refs_index):
             # this should not happen on real data
             way_shape['shape'] = LineString(way_shape['shape'].exterior.coords)
         lines.append(way_shape['shape'])
+
     if len(lines) < 1:
+        warning('No lines for multiline relation', pformat(rel))
         return None
 
     multiline = MultiLineString(lines)
@@ -364,7 +397,11 @@ def multipolygon_relation_to_shape(rel, refs_index):
     if 'members' in rel:
         members = rel['members']
     else:
-        members = refs_index[rel['ref']]['members']
+        found_ref = get_ref(rel, refs_index)
+        if not found_ref:
+            error('Ref for multipolygon relation not found in index', pformat(rel))
+            return None
+        members = found_ref['members']
 
     for member in members:
         if member['type'] != 'way':
@@ -454,6 +491,7 @@ def convert_ways_to_multipolygon(outer, inner = []):
 
     outer_polygon = _convert_lines_to_multipolygon(outer)
     if outer_polygon is None:
+        warning('Failed to convert outer lines to multipolygon')
         return None
 
     if len(inner) < 1:
@@ -462,5 +500,6 @@ def convert_ways_to_multipolygon(outer, inner = []):
     inner_polygon = _convert_lines_to_multipolygon(inner)
     if inner_polygon is None:
         # we need to handle this error in other way
+        warning('Failed to convert inner lines to multipolygon')
         return outer_polygon
     return to_multipolygon(outer_polygon.difference(inner_polygon))
