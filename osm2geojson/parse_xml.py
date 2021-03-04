@@ -44,18 +44,11 @@ def copy_fields(node, base, optional=[]):
 
 
 def filter_items_by_type(items, types):
-    filtered = []
-    for i in items:
-        if i['type'] in types:
-            filtered.append(i)
-    return filtered
+    return [i for i in items if i['type'] in types]
 
 
 def tags_to_obj(tags):
-    obj = {}
-    for tag in tags:
-        obj[tag['k']] = tag['v']
-    return obj
+    return {tag['k']: tag['v'] for tag in tags}
 
 
 def parse_bounds(node):
