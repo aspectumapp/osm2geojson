@@ -1,14 +1,15 @@
-from .parse_xml import parse as parse_xml
-from shapely.ops import cascaded_union, linemerge
-from shapely.geometry import (
-    mapping, Polygon, Point, LineString, MultiLineString, MultiPolygon, GeometryCollection
-)
-from shapely.geometry.polygon import orient
+import json
+import logging
+import os
 import traceback
 from pprint import pformat
-import logging
-import json
-import os
+
+from shapely.geometry import (GeometryCollection, LineString, MultiLineString,
+                              MultiPolygon, Point, Polygon, mapping)
+from shapely.geometry.polygon import orient
+from shapely.ops import cascaded_union, linemerge
+
+from .parse_xml import parse as parse_xml
 
 logger = logging.getLogger(__name__)
 dirname = os.path.dirname(__file__)
@@ -100,7 +101,7 @@ def _json2shapes(data, filter_used_refs=True, log_level='ERROR'):
     return filtered_shapes
 
 
-def element_to_shape(el, refs_index = None):
+def element_to_shape(el, refs_index=None):
     t = el['type']
     if t == 'node':
         return node_to_shape(el)
@@ -150,7 +151,7 @@ def node_to_shape(node):
     }
 
 
-def get_element_props(el, keys = ['type', 'id', 'tags']):
+def get_element_props(el, keys=['type', 'id', 'tags']):
     props = {}
     for key in keys:
         if key in el:
@@ -171,14 +172,14 @@ def convert_coords_to_lists(coords):
     return new_coords
 
 
-def shape_to_feature(g, props = {}):
+def shape_to_feature(g, props={}):
     # shapely returns tuples (we need lists)
-    g =  mapping(g)
+    g = mapping(g)
     g['coordinates'] = convert_coords_to_lists(g['coordinates'])
     return {
         "type": "Feature",
         'properties': props,
-        "geometry":g
+        "geometry": g
     }
 
 
@@ -196,7 +197,7 @@ def fix_invalid_polygon(p):
     return p
 
 
-def way_to_shape(way, refs_index = {}):
+def way_to_shape(way, refs_index={}):
     coords = []
 
     if 'center' in way:
@@ -309,6 +310,7 @@ def is_geometry_polygon(node):
         return not is_exception(node)
     else:
         return False
+
 
 def is_geometry_polygon_without_exceptions(node):
     tags = node['tags']
@@ -431,7 +433,7 @@ def multipolygon_relation_to_shape(rel, refs_index):
 
     multipolygon = fix_invalid_polygon(multipolygon)
     multipolygon = to_multipolygon(multipolygon)
-    multipolygon = orient_multipolygon(multipolygon) # do we need this?
+    multipolygon = orient_multipolygon(multipolygon)  # do we need this?
 
     return {
         'shape': multipolygon,
@@ -483,7 +485,7 @@ def _convert_lines_to_multipolygon(lines):
     return to_multipolygon(poly)
 
 
-def convert_ways_to_multipolygon(outer, inner = []):
+def convert_ways_to_multipolygon(outer, inner=[]):
     if len(outer) < 1:
         # throw exception
         warning('Ways not found')

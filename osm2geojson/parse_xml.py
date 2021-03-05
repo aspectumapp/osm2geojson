@@ -1,6 +1,8 @@
 import xml.etree.ElementTree as ElementTree
+
 default_types = ['node', 'way', 'relation', 'member', 'nd']
 optional_meta_fields = ['timestamp', 'version:int', 'changeset:int', 'user', 'uid:int']
+
 
 def parse_key(key):
     t = 'string'
@@ -8,6 +10,7 @@ def parse_key(key):
     if len(parts) > 1:
         t = parts[1]
     return parts[0], t
+
 
 def to_type(v, t):
     if t == 'string':
@@ -18,13 +21,15 @@ def to_type(v, t):
         return float(v)
     return v
 
-def with_meta_fields(fields = []):
+
+def with_meta_fields(fields=[]):
     for field in optional_meta_fields:
         if field not in fields:
             fields.append(field)
     return fields
 
-def copy_fields(node, base, optional = []):
+
+def copy_fields(node, base, optional=[]):
     obj = {}
     for key in base:
         key, t = parse_key(key)
@@ -37,6 +42,7 @@ def copy_fields(node, base, optional = []):
             obj[key] = to_type(node.attrib[key], t)
     return obj
 
+
 def filter_items_by_type(items, types):
     filtered = []
     for i in items:
@@ -44,11 +50,13 @@ def filter_items_by_type(items, types):
             filtered.append(i)
     return filtered
 
+
 def tags_to_obj(tags):
     obj = {}
     for tag in tags:
         obj[tag['k']] = tag['v']
     return obj
+
 
 def parse_bounds(node):
     return copy_fields(node, [
@@ -58,6 +66,7 @@ def parse_bounds(node):
         'maxlon:float'
     ])
 
+
 def parse_count(node):
     bounds, tags, _empty, unhandled = parse_xml_node(node, [])
     item = copy_fields(node, ['id:int'])
@@ -66,11 +75,14 @@ def parse_count(node):
         item['tags'] = tags_to_obj(tags)
     return item
 
+
 def parse_tag(node):
     return copy_fields(node, ['k', 'v'])
 
+
 def parse_nd(node):
     return copy_fields(node, [], ['ref:int', 'lat:float', 'lon:float'])
+
 
 def parse_node(node):
     bounds, tags, items, unhandled = parse_xml_node(node)
@@ -85,6 +97,7 @@ def parse_node(node):
     if len(tags) > 0:
         item['tags'] = tags_to_obj(tags)
     return item
+
 
 def parse_way(node):
     bounds, tags, nds, unhandled = parse_xml_node(node, ['nd'])
@@ -106,6 +119,7 @@ def parse_way(node):
         way['nodes'] = nodes
     return way
 
+
 def parse_relation(node):
     bounds, tags, members, unhandled = parse_xml_node(node, ['member'])
 
@@ -118,6 +132,7 @@ def parse_relation(node):
     if len(tags) > 0:
         relation['tags'] = tags_to_obj(tags)
     return relation
+
 
 def format_ojson(elements, unhandled):
     version = 0.6
@@ -152,6 +167,7 @@ def format_ojson(elements, unhandled):
 
     return item
 
+
 def parse(xml_str):
     root = ElementTree.fromstring(xml_str)
     if not root.tag == 'osm':
@@ -161,6 +177,7 @@ def parse(xml_str):
     bounds, tags, elements, unhandled = parse_xml_node(root, ['node', 'way', 'relation', 'count'])
     unhandled.append(root)
     return format_ojson(elements, unhandled)
+
 
 def parse_node_type(node, node_type):
     if node_type == 'bounds':
@@ -188,7 +205,8 @@ def parse_node_type(node, node_type):
         print('Unhandled node type', node_type)
         return None
 
-def parse_xml_node(root, node_types = default_types):
+
+def parse_xml_node(root, node_types=default_types):
     bounds = None
     count = None
     tags = []
