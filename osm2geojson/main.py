@@ -260,7 +260,7 @@ def way_to_shape(way, refs_index={}):
                 'shape': poly,
                 'properties': props
             }
-        except:
+        except Exception:
             warning('Failed to generate polygon from way', pformat(way))
             return None
     else:
@@ -338,7 +338,7 @@ def relation_to_shape(rel, refs_index):
             return multipolygon_relation_to_shape(rel, refs_index)
         else:
             return multiline_realation_to_shape(rel, refs_index)
-    except Exception as e:
+    except Exception:
         # traceback.print_exc()
         error('Failed to convert relation to shape', pformat(rel))
 
@@ -469,7 +469,7 @@ def _convert_lines_to_multipolygon(lines):
                     polygons.append(poly)
                 else:
                     polygons.append(poly.buffer(0))
-            except:
+            except Exception:
                 # throw exception
                 warning('Failed to build polygon', pformat(line))
         return to_multipolygon(cascaded_union(polygons))
