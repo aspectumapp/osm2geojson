@@ -238,10 +238,10 @@ def way_to_shape(way, refs_index={}):
             warning('Way by ref not converted to shape', pformat(way))
             return None
         coords = (
-            ref_way['shape'].exterior.coords
+            ref_way['shape'].exterior
             if isinstance(ref_way['shape'], Polygon)
-            else ref_way['shape'].coords
-        )
+            else ref_way['shape']
+        ).coords
 
     else:
         # throw exception

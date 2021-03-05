@@ -106,9 +106,9 @@ def parse_way(node):
     way['type'] = 'way'
     if len(tags) > 0:
         way['tags'] = tags_to_obj(tags)
-    if len(geometry) > 0:
+    if geometry:
         way['geometry'] = geometry
-    if len(nodes) > 0:
+    if nodes:
         way['nodes'] = nodes
     return way
 
@@ -136,9 +136,9 @@ def format_ojson(elements, unhandled):
     for node in unhandled:
         if node.tag == 'meta' and 'osm_base' in node.attrib:
             timestamp_osm_base = node.attrib['osm_base']
-        if node.tag == 'note':
+        elif node.tag == 'note':
             copyright = node.text
-        if node.tag == 'osm':
+        elif node.tag == 'osm':
             if 'version' in node.attrib:
                 version = float(node.attrib['version'])
             if 'generator' in node.attrib:
@@ -151,19 +151,17 @@ def format_ojson(elements, unhandled):
 
     if generator is not None:
         item['generator'] = generator
-    if copyright is not None or timestamp_osm_base is not None:
-        item['osm3s'] = {}
-        if copyright is not None:
-            item['osm3s']['copyright'] = copyright
-        if timestamp_osm_base is not None:
-            item['osm3s']['timestamp_osm_base'] = timestamp_osm_base
+    if copyright is not None:
+        item.setdefault('osm3s', {})['copyright'] = copyright
+    if timestamp_osm_base is not None:
+        item.setdefault('osm3s', {})['timestamp_osm_base'] = timestamp_osm_base
 
     return item
 
 
 def parse(xml_str):
     root = ElementTree.fromstring(xml_str)
-    if not root.tag == 'osm':
+    if root.tag != 'osm':
         print('OSM root node not found!')
         return None
 
