@@ -69,10 +69,12 @@ def _json2shapes(data, filter_used_refs=True, log_level='ERROR'):
     logger.setLevel(log_level)
     shapes = []
 
-    refs = []
-    for el in data['elements']:
-        if el['type'] in ['node', 'way', 'relation']:
-            refs.append(el)
+    refs = [
+        el
+        for el in data['elements']
+        if el['type'] in ['node', 'way', 'relation']
+    ]
+
     refs_index = build_refs_index(refs)
 
     for el in data['elements']:
@@ -85,11 +87,10 @@ def _json2shapes(data, filter_used_refs=True, log_level='ERROR'):
     if not filter_used_refs:
         return shapes
 
-    used = {}
-    for ref in refs:
-        if 'used' in ref:
-            used[ref['id']] = ref['used']
-
+    used = {
+        ref['id']: ref['used']
+        for ref in refs if 'used' in ref
+    }
     filtered_shapes = []
     for shape in shapes:
         if 'properties' not in shape:
@@ -138,10 +139,10 @@ def get_node_ref(id, refs_index):
 
 
 def build_refs_index(elements):
-    obj = {}
-    for el in elements:
-        obj[get_ref_name(el)] = el
-    return obj
+    return {
+        get_ref_name(el): el
+        for el in elements
+    }
 
 
 def node_to_shape(node):
@@ -152,24 +153,21 @@ def node_to_shape(node):
 
 
 def get_element_props(el, keys=['type', 'id', 'tags']):
-    props = {}
-    for key in keys:
-        if key in el:
-            props[key] = el[key]
-    return props
+    return {
+        key: el[key]
+        for key in keys
+        if key in el
+    }
 
 
 def convert_coords_to_lists(coords):
-    new_coords = list()
     if len(coords) < 1:
-        return new_coords
+        return []
 
     if isinstance(coords[0], float):
         return list(coords)
 
-    for c in coords:
-        new_coords.append(convert_coords_to_lists(c))
-    return new_coords
+    return [convert_coords_to_lists(c) for c in coords]
 
 
 def shape_to_feature(g, props={}):
@@ -198,8 +196,6 @@ def fix_invalid_polygon(p):
 
 
 def way_to_shape(way, refs_index={}):
-    coords = []
-
     if 'center' in way:
         center = way['center']
         return {
@@ -208,10 +204,13 @@ def way_to_shape(way, refs_index={}):
         }
 
     if 'geometry' in way and len(way['geometry']) > 0:
-        for nd in way['geometry']:
-            coords.append([nd['lon'], nd['lat']])
+        coords = [
+            [nd['lon'], nd['lat']]
+            for nd in way['geometry']
+        ]
 
     elif 'nodes' in way and len(way['nodes']) > 0:
+        coords = []
         for ref in way['nodes']:
             node = get_node_ref(ref, refs_index)
             if node:
@@ -238,10 +237,11 @@ def way_to_shape(way, refs_index={}):
         if ref_way is None:
             warning('Way by ref not converted to shape', pformat(way))
             return None
-        if isinstance(ref_way['shape'], Polygon):
-            coords = ref_way['shape'].exterior.coords
-        else:
-            coords = ref_way['shape'].coords
+        coords = (
+            ref_way['shape'].exterior
+            if isinstance(ref_way['shape'], Polygon)
+            else ref_way['shape']
+        ).coords
 
     else:
         # throw exception
@@ -260,7 +260,7 @@ def way_to_shape(way, refs_index={}):
                 'shape': poly,
                 'properties': props
             }
-        except:
+        except Exception:
             warning('Failed to generate polygon from way', pformat(way))
             return None
     else:
@@ -321,10 +321,7 @@ def is_geometry_polygon_without_exceptions(node):
             if rule['polygon'] == 'whitelist' and tags[rule['key']] in rule['values']:
                 return True
             if rule['polygon'] == 'blacklist':
-                if tags[rule['key']] in rule['values']:
-                    return False
-                else:
-                    return True
+                return tags[rule['key']] not in rule['values']
     return False
 
 
@@ -341,7 +338,7 @@ def relation_to_shape(rel, refs_index):
             return multipolygon_relation_to_shape(rel, refs_index)
         else:
             return multiline_realation_to_shape(rel, refs_index)
-    except Exception as e:
+    except Exception:
         # traceback.print_exc()
         error('Failed to convert relation to shape', pformat(rel))
 
@@ -446,10 +443,10 @@ def to_multipolygon(obj):
         return obj
 
     if isinstance(obj, GeometryCollection):
-        p = []
-        for el in obj:
-            if isinstance(el, Polygon):
-                p.append(el)
+        p = [
+            el for el in obj
+            if isinstance(el, Polygon)
+        ]
         return MultiPolygon(p)
 
     if isinstance(obj, Polygon):
@@ -472,7 +469,7 @@ def _convert_lines_to_multipolygon(lines):
                     polygons.append(poly)
                 else:
                     polygons.append(poly.buffer(0))
-            except:
+            except Exception:
                 # throw exception
                 warning('Failed to build polygon', pformat(line))
         return to_multipolygon(cascaded_union(polygons))
