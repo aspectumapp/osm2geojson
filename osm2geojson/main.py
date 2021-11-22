@@ -152,7 +152,17 @@ def node_to_shape(node):
     }
 
 
-def get_element_props(el, keys=['type', 'id', 'tags']):
+def get_element_props(el, keys=[
+    'type',
+    'id',
+    'tags',
+    'nodes',
+    'timestamp',
+    'user',
+    'uid',
+    'version'
+]
+):
     return {
         key: el[key]
         for key in keys
