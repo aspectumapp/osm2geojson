@@ -1,0 +1,38 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.57.1 74a55df1",
+  "osm3s": {
+    "timestamp_osm_base": "2021-11-22T22:35:54Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+    {
+      "type": "node",
+      "id": 4883483009,
+      "lat": 50.6136731,
+      "lon": 26.2433173,
+      "timestamp": "2017-05-29T12:04:57Z",
+      "version": 1,
+      "changeset": 49071406,
+      "user": "Sergioni145",
+      "uid": 2436512
+    },
+    {
+      "type": "node",
+      "id": 6657522239,
+      "lat": 50.6148747,
+      "lon": 26.2449014,
+      "timestamp": "2019-08-01T07:00:26Z",
+      "version": 2,
+      "changeset": 72883450,
+      "user": "K2_UNDERGROUND",
+      "uid": 561874,
+      "tags": {
+        "historic": "memorial",
+        "inscription": "Знак роду Лимич",
+        "memorial": "obelisk",
+        "name": "Знак роду Лимич"
+      }
+    }
+  ]
+}
