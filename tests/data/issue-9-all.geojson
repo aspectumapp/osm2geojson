@@ -95,7 +95,10 @@
         "id": 361110018,
         "tags": {
           "source": "yahoo satellite"
-        }
+        },
+        "nodes": [
+          98939159, 603010137, 6038685227, 603010136, 603010135, 603010113
+        ]
       },
       "geometry": {
         "type": "LineString",

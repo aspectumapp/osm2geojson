@@ -5,7 +5,12 @@
       "type": "Feature",
       "properties": {
         "type": "way",
-        "id": 1
+        "id": 1,
+        "nodes": [
+          2,
+          3,
+          4
+        ]
       },
       "geometry": {
         "type": "LineString",

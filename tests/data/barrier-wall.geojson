@@ -12,7 +12,12 @@
           "canvec:CODE": "2240021",
           "canvec:UUID": "11CF457637C4E5F4E0409C8467120387",
           "source": "CanVec_Import_2009"
-        }
+        },
+        "nodes": [558708287, 558708288, 558708289, 558708290],
+        "timestamp": "2009-11-07T08:33:58Z",
+        "user": "andrewpmk",
+        "uid": 1679,
+        "version": 1
       },
       "geometry": {
         "type": "LineString",
