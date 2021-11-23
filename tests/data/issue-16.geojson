@@ -5,7 +5,11 @@
       "type": "Feature",
       "properties": {
         "type": "way",
-        "id": 4402690
+        "id": 4402690,
+        "nodes": [
+          26763057,
+          26762979
+        ]
       },
       "geometry": {
         "type": "LineString",

@@ -14,7 +14,8 @@
           "indoor":"yes",
           "level":"-1",
           "tunnel":"yes"
-        }
+        },
+        "nodes": [3906444343, 3906444348]
       },
       "geometry":{
         "type":"LineString",

@@ -13,7 +13,11 @@
           "name": "Thalwil Zentrum",
           "public_transport": "platform",
           "shelter": "yes"
-        }
+        },
+        "nodes": [
+          1679690155,
+          1679690156
+        ]
       },
       "geometry": {
         "type": "LineString",
