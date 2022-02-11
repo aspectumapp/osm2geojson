@@ -7,7 +7,7 @@ from pprint import pformat
 from shapely.geometry import (GeometryCollection, LineString, MultiLineString,
                               MultiPolygon, Point, Polygon, mapping)
 from shapely.geometry.polygon import orient
-from shapely.ops import cascaded_union, linemerge
+from shapely.ops import unary_union, linemerge
 
 from .parse_xml import parse as parse_xml
 
@@ -482,7 +482,7 @@ def _convert_lines_to_multipolygon(lines):
             except Exception:
                 # throw exception
                 warning('Failed to build polygon', pformat(line))
-        return to_multipolygon(cascaded_union(polygons))
+        return to_multipolygon(unary_union(polygons))
     try:
         poly = Polygon(merged_line)
     except Exception as e:
