@@ -12,15 +12,22 @@ from shapely.ops import unary_union, linemerge
 from .parse_xml import parse as parse_xml
 
 logger = logging.getLogger(__name__)
-dirname = os.path.dirname(__file__)
-polygon_features_file = os.path.join(dirname, 'polygon-features.json')
-area_keys_file = os.path.join(dirname, 'areaKeys.json')
+DEFAULT_POLYGON_FEATURES_FILE = os.path.join(os.path.dirname(__file__), 'polygon-features.json')
+DEFAULT_AREA_KEYS_FILE = os.path.join(os.path.dirname(__file__), 'areaKeys.json')
 
-with open(polygon_features_file) as data:
-    polygon_features = json.loads(data.read())
+if os.path.exists(DEFAULT_POLYGON_FEATURES_FILE):
+    with open(DEFAULT_POLYGON_FEATURES_FILE) as f:
+        _default_polygon_features = json.load(f)
+else:
+    logger.warning("Default polygon features file not found, using empty filter")
+    _default_polygon_features = []
 
-with open(area_keys_file) as data:
-    area_keys = json.loads(data.read())['areaKeys']
+if os.path.exists(DEFAULT_AREA_KEYS_FILE):
+    with open(DEFAULT_AREA_KEYS_FILE) as f:
+        _default_area_keys = json.load(f)['areaKeys']
+else:
+    logger.warning("Default area keys file not found, using empty filter")
+    _default_area_keys = {}
 
 
 def warning(*args):
