@@ -36,11 +36,18 @@ def setup_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="allow overwriting of existing file"
     )
-    parser.add_argument(
+    logging = parser.add_mutually_exclusive_group()
+    logging.add_argument(
         "-q",
         "--quiet",
         action="store_true",
         help="suppress logging output"
+    )
+    logging.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="enable verbose logging output"
     )
     parser.add_argument(
         "-i",
@@ -64,18 +71,24 @@ def setup_parser() -> argparse.ArgumentParser:
         help="specify the output format (either GeoJSON or shape JSON), defaults to GeoJSON"
     )
     parser.add_argument(
+        "--no-unused-filter",
+        action="store_false",
+        dest="filter_used_refs",
+        help="don't filter unused references (only in shape JSON)"
+    )
+    parser.add_argument(
         "--areas",
         type=optional_file,
         default=None,
         metavar="file",
-        help="JSON file defining the keys that should be included from areas (uses default if omitted)"
+        help="JSON file defining the keys that should be included from areas (uses defaults if omitted)"
     )
     parser.add_argument(
         "--polygons",
         type=optional_file,
         default=None,
         metavar="file",
-        help="JSON file defining the allowed/restricted polygon features (uses default if omitted)"
+        help="JSON file defining the allowed/restricted polygon features (uses defaults if omitted)"
     )
     return parser
 
@@ -118,10 +131,34 @@ def main(args=None) -> int:
 
     with open(args.infile) as f:
         data = f.read()
-    result = parser_function(data)
+
+    log_level = "WARNING"
+    if args.quiet:
+        log_level = "CRITICAL"
+    elif args.verbose:
+        log_level = "DEBUG"
+
+    area_keys = None
+    if args.areas:
+        with open(args.areas) as f:
+            area_keys = json.load(f)
+            if "areaKeys" in area_keys and len(area_keys) == 1:
+                area_keys = area_keys["areaKeys"]
+    polygon_features = None
+    if args.polygons:
+        with open(args.polygons) as f:
+            polygon_features = json.load(f)
+
+    result = parser_function(
+        data,
+        filter_used_refs=args.filter_used_refs,
+        log_level=log_level,
+        area_keys=area_keys,
+        polygon_features=polygon_features
+    )
 
     indent = args.indent
-    if indent < 0:
+    if indent and indent < 0:
         indent = None
     if args.outfile == "-":
         target = sys.stderr
