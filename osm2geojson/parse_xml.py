@@ -22,14 +22,16 @@ def to_type(v, t):
     return v
 
 
-def with_meta_fields(fields=[]):
+def with_meta_fields(fields: list = None):
+    fields = fields or []
     for field in optional_meta_fields:
         if field not in fields:
             fields.append(field)
     return fields
 
 
-def copy_fields(node, base, optional=[]):
+def copy_fields(node, base, optional: list = None):
+    optional = optional or []
     obj = {}
     for key in base:
         key, t = parse_key(key)
@@ -197,7 +199,8 @@ def parse_node_type(node, node_type):
         return None
 
 
-def parse_xml_node(root, node_types=default_types):
+def parse_xml_node(root, node_types: list = None):
+    node_types = node_types or default_types
     bounds = None
     count = None
     tags = []

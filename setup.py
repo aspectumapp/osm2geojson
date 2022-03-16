@@ -11,7 +11,7 @@ def parse_requirements(filename):
 
 setup(
     name='osm2geojson',
-    version='0.1.31',
+    version='0.1.32',
     license='MIT',
     description='Parse OSM and Overpass JSON',
     long_description=long_description,

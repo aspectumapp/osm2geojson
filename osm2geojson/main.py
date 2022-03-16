@@ -178,17 +178,17 @@ def node_to_shape(node):
     }
 
 
-def get_element_props(el, keys=[
-    'type',
-    'id',
-    'tags',
-    'nodes',
-    'timestamp',
-    'user',
-    'uid',
-    'version'
-]
-):
+def get_element_props(el, keys: list = None):
+    keys = keys or [
+        'type',
+        'id',
+        'tags',
+        'nodes',
+        'timestamp',
+        'user',
+        'uid',
+        'version'
+    ]
     return {
         key: el[key]
         for key in keys
@@ -206,7 +206,8 @@ def convert_coords_to_lists(coords):
     return [convert_coords_to_lists(c) for c in coords]
 
 
-def shape_to_feature(g, props={}):
+def shape_to_feature(g, props: dict = None):
+    props = props or {}
     # shapely returns tuples (we need lists)
     g = mapping(g)
     g['coordinates'] = convert_coords_to_lists(g['coordinates'])
@@ -231,7 +232,11 @@ def fix_invalid_polygon(p):
     return p
 
 
-def way_to_shape(way, refs_index={}, area_keys: Optional[dict] = None, polygon_features: Optional[list] = None):
+def way_to_shape(
+        way, refs_index: dict = None,
+        area_keys: Optional[dict] = None, polygon_features: Optional[list] = None
+):
+    refs_index = refs_index or {}
     if 'center' in way:
         center = way['center']
         return {
@@ -526,7 +531,8 @@ def _convert_lines_to_multipolygon(lines):
     return to_multipolygon(poly)
 
 
-def convert_ways_to_multipolygon(outer, inner=[]):
+def convert_ways_to_multipolygon(outer, inner: list = None):
+    inner = inner or []
     if len(outer) < 1:
         # throw exception
         warning('Ways not found')
