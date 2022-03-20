@@ -4,27 +4,21 @@ import os
 import sys
 import json
 import argparse
-from typing import Optional
 
-from .main import json2geojson, json2shapes, xml2geojson, xml2shapes
+from .main import json2geojson, xml2geojson
 
 
 def setup_parser() -> argparse.ArgumentParser:
-    def existing_file(v: str) -> str:
+    def file(v: str) -> str:
         if not os.path.exists(v):
             raise ValueError(v)
         return v
 
-    def optional_file(v: Optional[str] = None) -> Optional[str]:
-        if v is None:
-            return None
-        return existing_file(v)
-
     parser = argparse.ArgumentParser(prog=__package__)
     parser.add_argument(
         "infile",
-        type=existing_file,
-        help="OSM or Overpass JSON file to convert to GeoJSON or shape JSON"
+        type=file,
+        help="OSM or Overpass JSON file to convert to GeoJSON"
     )
     parser.add_argument(
         "outfile",
@@ -57,18 +51,11 @@ def setup_parser() -> argparse.ArgumentParser:
         default=None,
         help="indentation using N spaces for the output file (defaults to none)"
     )
-    # TODO: Overpass JSON is fine, but what about Overpass XML?
     parser.add_argument(
         "--reader",
-        choices=("osm", "overpass", "auto"),
+        choices=("json", "xml", "auto"),
         default="auto",
-        help="specify the input file format (either OSM or Overpass JSON), defaults to auto-detect"
-    )
-    parser.add_argument(
-        "--format",
-        choices=("geo", "shape"),
-        default="geojson",
-        help="specify the output format (either GeoJSON or shape JSON), defaults to GeoJSON"
+        help="specify the input file format (either OSM XML or Overpass JSON/XML), defaults to auto-detect"
     )
     parser.add_argument(
         "--no-unused-filter",
@@ -78,14 +65,14 @@ def setup_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--areas",
-        type=optional_file,
+        type=file,
         default=None,
         metavar="file",
         help="JSON file defining the keys that should be included from areas (uses defaults if omitted)"
     )
     parser.add_argument(
         "--polygons",
-        type=optional_file,
+        type=file,
         default=None,
         metavar="file",
         help="JSON file defining the allowed/restricted polygon features (uses defaults if omitted)"
@@ -94,34 +81,18 @@ def setup_parser() -> argparse.ArgumentParser:
 
 
 def main(args=None) -> int:
+    args = args or sys.argv[1:]
     parser = setup_parser()
     args = parser.parse_args(args)
 
-    parser_function = None
-    if args.reader == "auto":
-        if args.infile.endswith((".osm", ".xml")):
-            parser_function = xml2geojson
-            if args.format == "shape":
-                parser_function = xml2shapes
-        elif args.infile.endswith((".shape", ".json")):
-            parser_function = json2geojson
-            if args.format == "shape":
-                parser_function = json2shapes
-        else:
-            # default of converting OSM to GeoJSON which may fail for invalid inputs
-            parser_function = xml2geojson
-    elif args.reader == "osm":
+    if args.reader == "xml" or args.reader == "auto" and args.infile.endswith((".osm", ".xml")):
         parser_function = xml2geojson
-        if args.format == "shape":
-            parser_function = xml2shapes
-    elif args.reader == "overpass":
+    elif args.reader == "json" or args.reader == "auto" and args.infile.endswith(".json"):
         parser_function = json2geojson
-        if args.format == "shape":
-            parser_function = json2shapes
-
-    if parser_function is None:
-        print("Unspecified parser function. Consider using --format and --reader.", file=sys.stderr)
+    else:
+        print("Auto-detecting input file format failed. Consider using --reader.", file=sys.stderr)
         return 1
+
     if args.outfile != "-" and os.path.exists(args.outfile) and not args.force:
         print(
             "Output file '{}' already exists. Consider using -f to force overwriting.".format(args.outfile),
