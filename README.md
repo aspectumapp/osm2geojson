@@ -46,7 +46,11 @@ shape_obj = {
 ```
 
 After installing via `pip`, the module may also be used as a `argparse`-based command-line script.
-Just call Python with the `-m` option and the package name:
+Either use the script name directly or call Python with the `-m` option and the package name:
+
+```sh
+osm2geojson --help
+```
 
 ```sh
 python3 -m osm2geojson --help

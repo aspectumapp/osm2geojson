@@ -161,7 +161,7 @@ def main(args=None) -> int:
     if indent and indent < 0:
         indent = None
     if args.outfile == "-":
-        target = sys.stderr
+        target = sys.stdout
     else:
         target = open(args.outfile, "w")
 
