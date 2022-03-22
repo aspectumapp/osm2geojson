@@ -26,6 +26,6 @@ setup(
     include_package_data=True,
     install_requires=parse_requirements("requirements.txt"),
     entry_points={
-        'console_scripts': ['osm2geojson=osm2geojson.__main__.main']
+        'console_scripts': ['osm2geojson=osm2geojson.__main__.main:main']
     }
 )
