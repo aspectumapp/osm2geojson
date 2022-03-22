@@ -23,14 +23,16 @@ If you want to convert OSM xml or Overpass json/xml to Geojson you can import th
 Additional parameters for all functions:
 
 - `filter_used_refs` - (default: `True`) defines geometry filtration strategy (will return all geometry if set as `False`)
-- `log_level` - (default: `'ERROR'`) controlls logging level (will print all logs if set as `'INFO'`). More details [here](https://docs.python.org/3/library/logging.html#logging-levels)
+- `log_level` - (default: `'ERROR'`) controls logging level (will print all logs if set as `'INFO'`). More details [here](https://docs.python.org/3/library/logging.html#logging-levels)
+- `area_keys` - (default: `None`) defines which keys and values of an area should be saved from the list of OSM tags, see `areaKeys.json` for the defaults
+- `polygon_features` - (default: `None`) defines a whitelist/blacklist of features to be included in resulting polygons, see `polygon-features.json` for the defaults
 
 Other handy methods:
 
 - `overpass_call(str query)` - runs query to overpass-api.de server (retries 5 times in case of error).
 - `shape_to_feature(Shape shape, dict properties)` - Converts Shape-object to GeoJSON with passed properties.
 
-**\*Shape-object - for convinience created simple dict to save Shapely object (geometry) and OSM-properties. Structure of this object:**
+**\*Shape-object - for convenience created simple dict to save Shapely object (geometry) and OSM-properties. Structure of this object:**
 
 ```py
 shape_obj = {
@@ -41,6 +43,17 @@ shape_obj = {
         ...
     }
 }
+```
+
+After installing via `pip`, the module may also be used as a `argparse`-based command-line script.
+Either use the script name directly or call Python with the `-m` option and the package name:
+
+```sh
+osm2geojson --help
+```
+
+```sh
+python3 -m osm2geojson --help
 ```
 
 ### Examples

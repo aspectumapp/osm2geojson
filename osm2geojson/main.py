@@ -1,8 +1,8 @@
+import os
 import json
 import logging
-import os
-import traceback
 from pprint import pformat
+from typing import Optional
 
 from shapely.geometry import (GeometryCollection, LineString, MultiLineString,
                               MultiPolygon, Point, Polygon, mapping)
@@ -11,16 +11,24 @@ from shapely.ops import unary_union, linemerge
 
 from .parse_xml import parse as parse_xml
 
+
 logger = logging.getLogger(__name__)
-dirname = os.path.dirname(__file__)
-polygon_features_file = os.path.join(dirname, 'polygon-features.json')
-area_keys_file = os.path.join(dirname, 'areaKeys.json')
+DEFAULT_POLYGON_FEATURES_FILE = os.path.join(os.path.dirname(__file__), 'polygon-features.json')
+DEFAULT_AREA_KEYS_FILE = os.path.join(os.path.dirname(__file__), 'areaKeys.json')
 
-with open(polygon_features_file) as data:
-    polygon_features = json.loads(data.read())
+if os.path.exists(DEFAULT_POLYGON_FEATURES_FILE):
+    with open(DEFAULT_POLYGON_FEATURES_FILE) as f:
+        _default_polygon_features = json.load(f)
+else:
+    logger.warning("Default polygon features file not found, using empty filter")
+    _default_polygon_features = []
 
-with open(area_keys_file) as data:
-    area_keys = json.loads(data.read())['areaKeys']
+if os.path.exists(DEFAULT_AREA_KEYS_FILE):
+    with open(DEFAULT_AREA_KEYS_FILE) as f:
+        _default_area_keys = json.load(f)['areaKeys']
+else:
+    logger.warning("Default area keys file not found, using empty filter")
+    _default_area_keys = {}
 
 
 def warning(*args):
@@ -31,31 +39,46 @@ def error(*args):
     logger.error(' '.join(args))
 
 
-def json2geojson(data, filter_used_refs=True, log_level='ERROR'):
+def json2geojson(
+        data, filter_used_refs=True, log_level='ERROR',
+        area_keys: Optional[dict] = None, polygon_features: Optional[list] = None
+):
     if isinstance(data, str):
         data = json.loads(data)
-    return _json2geojson(data, filter_used_refs, log_level)
+    return _json2geojson(data, filter_used_refs, log_level, area_keys, polygon_features)
 
 
-def xml2geojson(xml_str, filter_used_refs=True, log_level='ERROR'):
+def xml2geojson(
+        xml_str, filter_used_refs=True, log_level='ERROR',
+        area_keys: Optional[dict] = None, polygon_features: Optional[list] = None
+):
     data = parse_xml(xml_str)
-    return _json2geojson(data, filter_used_refs, log_level)
+    return _json2geojson(data, filter_used_refs, log_level, area_keys, polygon_features)
 
 
-def json2shapes(data, filter_used_refs=True, log_level='ERROR'):
+def json2shapes(
+        data, filter_used_refs=True, log_level='ERROR',
+        area_keys: Optional[dict] = None, polygon_features: Optional[list] = None
+):
     if isinstance(data, str):
         data = json.loads(data)
-    return _json2shapes(data, filter_used_refs, log_level)
+    return _json2shapes(data, filter_used_refs, log_level, area_keys, polygon_features)
 
 
-def xml2shapes(xml_str, filter_used_refs=True, log_level='ERROR'):
+def xml2shapes(
+        xml_str, filter_used_refs=True, log_level='ERROR',
+        area_keys: Optional[dict] = None, polygon_features: Optional[list] = None
+):
     data = parse_xml(xml_str)
-    return _json2shapes(data, filter_used_refs, log_level)
+    return _json2shapes(data, filter_used_refs, log_level, area_keys, polygon_features)
 
 
-def _json2geojson(data, filter_used_refs=True, log_level='ERROR'):
+def _json2geojson(
+        data, filter_used_refs=True, log_level='ERROR',
+        area_keys: Optional[dict] = None, polygon_features: Optional[list] = None
+):
     features = []
-    for shape in _json2shapes(data, filter_used_refs, log_level):
+    for shape in _json2shapes(data, filter_used_refs, log_level, area_keys, polygon_features):
         feature = shape_to_feature(shape['shape'], shape['properties'])
         features.append(feature)
 
@@ -65,7 +88,10 @@ def _json2geojson(data, filter_used_refs=True, log_level='ERROR'):
     }
 
 
-def _json2shapes(data, filter_used_refs=True, log_level='ERROR'):
+def _json2shapes(
+        data, filter_used_refs=True, log_level='ERROR',
+        area_keys: Optional[dict] = None, polygon_features: Optional[list] = None
+):
     logger.setLevel(log_level)
     shapes = []
 
@@ -78,7 +104,7 @@ def _json2shapes(data, filter_used_refs=True, log_level='ERROR'):
     refs_index = build_refs_index(refs)
 
     for el in data['elements']:
-        shape = element_to_shape(el, refs_index)
+        shape = element_to_shape(el, refs_index, area_keys, polygon_features)
         if shape is not None:
             shapes.append(shape)
         else:
@@ -102,12 +128,12 @@ def _json2shapes(data, filter_used_refs=True, log_level='ERROR'):
     return filtered_shapes
 
 
-def element_to_shape(el, refs_index=None):
+def element_to_shape(el, refs_index=None, area_keys: Optional[dict] = None, polygon_features: Optional[list] = None):
     t = el['type']
     if t == 'node':
         return node_to_shape(el)
     if t == 'way':
-        return way_to_shape(el, refs_index)
+        return way_to_shape(el, refs_index, area_keys, polygon_features)
     if t == 'relation':
         return relation_to_shape(el, refs_index)
     warning('Failed to convert element to shape')
@@ -206,7 +232,10 @@ def fix_invalid_polygon(p):
     return p
 
 
-def way_to_shape(way, refs_index: dict = None):
+def way_to_shape(
+        way, refs_index: dict = None,
+        area_keys: Optional[dict] = None, polygon_features: Optional[list] = None
+):
     refs_index = refs_index or {}
     if 'center' in way:
         center = way['center']
@@ -245,7 +274,7 @@ def way_to_shape(way, refs_index: dict = None):
         else:
             # filter will not work for this situation
             warning('Failed to mark ref as used', pformat(ref), 'for way', pformat(way))
-        ref_way = way_to_shape(ref, refs_index)
+        ref_way = way_to_shape(ref, refs_index, area_keys, polygon_features)
         if ref_way is None:
             warning('Way by ref not converted to shape', pformat(way))
             return None
@@ -265,7 +294,7 @@ def way_to_shape(way, refs_index: dict = None):
         return None
 
     props = get_element_props(way)
-    if is_geometry_polygon(way):
+    if is_geometry_polygon(way, area_keys, polygon_features):
         try:
             poly = fix_invalid_polygon(Polygon(coords))
             return {
@@ -282,7 +311,8 @@ def way_to_shape(way, refs_index: dict = None):
         }
 
 
-def is_exception(node):
+def is_exception(node, area_keys: Optional[dict] = None):
+    area_keys = area_keys or _default_area_keys
     for tag in node['tags']:
         if tag in area_keys:
             value = node['tags'][tag]
@@ -294,7 +324,7 @@ def is_same_coords(a, b):
     return a['lat'] == b['lat'] and a['lon'] == b['lon']
 
 
-def is_geometry_polygon(node):
+def is_geometry_polygon(node, area_keys: Optional[dict] = None, polygon_features: Optional[list] = None):
     if 'tags' not in node:
         return False
     tags = node['tags']
@@ -317,14 +347,15 @@ def is_geometry_polygon(node):
     if 'nodes' in node and node['nodes'][0] != node['nodes'][-1]:
         return False
 
-    is_polygon = is_geometry_polygon_without_exceptions(node)
+    is_polygon = is_geometry_polygon_without_exceptions(node, polygon_features)
     if is_polygon:
-        return not is_exception(node)
+        return not is_exception(node, area_keys)
     else:
         return False
 
 
-def is_geometry_polygon_without_exceptions(node):
+def is_geometry_polygon_without_exceptions(node, polygon_features: Optional[list] = None):
+    polygon_features = polygon_features or _default_polygon_features
     tags = node['tags']
     for rule in polygon_features:
         if rule['key'] in tags:
@@ -337,7 +368,7 @@ def is_geometry_polygon_without_exceptions(node):
     return False
 
 
-def relation_to_shape(rel, refs_index):
+def relation_to_shape(rel, refs_index, area_keys: Optional[dict] = None, polygon_features: Optional[list] = None):
     if 'center' in rel:
         center = rel['center']
         return {
@@ -346,7 +377,7 @@ def relation_to_shape(rel, refs_index):
         }
 
     try:
-        if is_geometry_polygon(rel):
+        if is_geometry_polygon(rel, area_keys, polygon_features):
             return multipolygon_relation_to_shape(rel, refs_index)
         else:
             return multiline_realation_to_shape(rel, refs_index)
@@ -355,7 +386,10 @@ def relation_to_shape(rel, refs_index):
         error('Failed to convert relation to shape', pformat(rel))
 
 
-def multiline_realation_to_shape(rel, refs_index):
+def multiline_realation_to_shape(
+        rel, refs_index,
+        area_keys: Optional[dict] = None, polygon_features: Optional[list] = None
+):
     lines = []
 
     if 'members' in rel:
@@ -369,12 +403,12 @@ def multiline_realation_to_shape(rel, refs_index):
 
     for member in members:
         if member['type'] == 'way':
-            way_shape = way_to_shape(member, refs_index)
+            way_shape = way_to_shape(member, refs_index, area_keys, polygon_features)
         elif member['type'] == 'relation':
             found_member = get_ref(member, refs_index)
             if found_member:
                 found_member['used'] = rel['id']
-            way_shape = element_to_shape(member, refs_index)
+            way_shape = element_to_shape(member, refs_index, area_keys, polygon_features)
         else:
             warning('multiline member not handled', pformat(member))
             continue
@@ -401,7 +435,10 @@ def multiline_realation_to_shape(rel, refs_index):
     }
 
 
-def multipolygon_relation_to_shape(rel, refs_index):
+def multipolygon_relation_to_shape(
+        rel, refs_index,
+        area_keys: Optional[dict] = None, polygon_features: Optional[list] = None
+):
     inner = []
     outer = []
 
@@ -421,7 +458,7 @@ def multipolygon_relation_to_shape(rel, refs_index):
 
         member['used'] = rel['id']
 
-        way_shape = way_to_shape(member, refs_index)
+        way_shape = way_to_shape(member, refs_index, area_keys, polygon_features)
         if way_shape is None:
             # throw exception
             warning('Failed to make way', pformat(member), 'in relation', pformat(rel))
