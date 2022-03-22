@@ -115,3 +115,8 @@ Update osm-polygon-features to last version (if you want last version)
 ```sh
 $ ./update-osm-polygon-features.sh
 ```
+
+### ToDo
+
+ * Add tests and examples for cli tool
+ * Add actions related to cli tool (more info https://github.com/aspectumapp/osm2geojson/pull/32#issuecomment-1073386381)
