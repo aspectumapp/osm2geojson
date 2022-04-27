@@ -479,12 +479,19 @@ def multipolygon_relation_to_shape(
 
     multipolygon = fix_invalid_polygon(multipolygon)
     multipolygon = to_multipolygon(multipolygon)
-    multipolygon = orient_multipolygon(multipolygon)  # do we need this?
+    multipolygon = orient_multipolygon(multipolygon)
+    polygon_or_multipolygon = get_polygon_or_multipolygon(multipolygon)
 
     return {
-        'shape': multipolygon,
+        'shape': polygon_or_multipolygon,
         'properties': get_element_props(rel)
     }
+
+
+def get_polygon_or_multipolygon(multipolygon):
+    if len(multipolygon.geoms) == 1:
+        return Polygon(multipolygon.geoms[0])
+    return multipolygon
 
 
 def to_multipolygon(obj):
