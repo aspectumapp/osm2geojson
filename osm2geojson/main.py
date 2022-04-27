@@ -219,7 +219,7 @@ def shape_to_feature(g, props: dict = None):
 
 
 def orient_multipolygon(p):
-    p = [orient(geom, sign=-1.0) for geom in p.geoms]
+    p = [orient(geom) for geom in p.geoms]
     return MultiPolygon(p)
 
 
