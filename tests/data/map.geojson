@@ -685,9 +685,8 @@
         "version": 2
       },
       "geometry": {
-        "type": "MultiPolygon",
+        "type": "Polygon",
         "coordinates": [
-          [
             [
               [
                 26.244626,
@@ -774,7 +773,6 @@
                 50.6140348
               ]
             ]
-          ]
         ]
       }
     },
