@@ -1,6 +1,8 @@
 import os
 import json
 import logging
+import traceback
+import itertools
 from pprint import pformat
 from typing import Optional
 
@@ -382,7 +384,7 @@ def relation_to_shape(rel, refs_index, area_keys: Optional[dict] = None, polygon
         else:
             return multiline_realation_to_shape(rel, refs_index)
     except Exception:
-        # traceback.print_exc()
+        traceback.print_exc()
         error('Failed to convert relation to shape', pformat(rel))
 
 
@@ -439,8 +441,8 @@ def multipolygon_relation_to_shape(
         rel, refs_index,
         area_keys: Optional[dict] = None, polygon_features: Optional[list] = None
 ):
-    inner = []
-    outer = []
+    # List of Tuple (role, multipolygon)
+    shapes = []
 
     if 'members' in rel:
         members = rel['members']
@@ -467,19 +469,20 @@ def multipolygon_relation_to_shape(
         if isinstance(way_shape['shape'], Polygon):
             way_shape['shape'] = LineString(way_shape['shape'].exterior.coords)
 
-        if member['role'] == 'inner':
-            inner.append(way_shape['shape'])
-        else:
-            outer.append(way_shape['shape'])
+        shapes.append((member['role'], way_shape['shape']))
 
-    multipolygon = convert_ways_to_multipolygon(outer, inner)
+    multipolygon = _convert_shapes_to_multipolygon(shapes)
     if multipolygon is None:
-        warning('Relation not converted to feature', pformat(rel))
+        warning('Failed to convert computed shapes to multipolygon', pformat(rel))
         return None
 
     multipolygon = fix_invalid_polygon(multipolygon)
     multipolygon = to_multipolygon(multipolygon)
     multipolygon = orient_multipolygon(multipolygon)  # do we need this?
+
+    if multipolygon is None:
+        warning('Failed to fix multipolygon. Report this in github please!', pformat(rel))
+        return None
 
     return {
         'shape': multipolygon,
@@ -511,7 +514,7 @@ def _convert_lines_to_multipolygon(lines):
     merged_line = linemerge(multi_line)
     if isinstance(merged_line, MultiLineString):
         polygons = []
-        for line in merged_line:
+        for line in merged_line.geoms:
             try:
                 poly = Polygon(line)
                 if poly.is_valid:
@@ -531,24 +534,33 @@ def _convert_lines_to_multipolygon(lines):
     return to_multipolygon(poly)
 
 
-def convert_ways_to_multipolygon(outer, inner: list = None):
-    inner = inner or []
-    if len(outer) < 1:
-        # throw exception
-        warning('Ways not found')
+def _convert_shapes_to_multipolygon(shapes):
+    if len(shapes) < 1:
+        warning('Failed to create multipolygon (Empty)')
         return None
 
-    outer_polygon = _convert_lines_to_multipolygon(outer)
-    if outer_polygon is None:
-        warning('Failed to convert outer lines to multipolygon')
+    # Intermediate groups
+    groups = []
+    # New group each time it switches role
+    for role, group in itertools.groupby(shapes, lambda s: s[0]):
+        groups.append((role, _convert_lines_to_multipolygon([_[1] for _ in group])))
+
+    # Grab the first one.
+    first_shape = groups.pop(0)
+    if first_shape[0] == 'inner':
+        warning('Failed to create multipolygon. First shape should have "outer" role')
         return None
 
-    if len(inner) < 1:
-        return outer_polygon
+    multipolygon = first_shape[1]
+    # Itterate over the rest if there are any
+    for role, geom in groups:
+        if role == "inner":
+            multipolygon = multipolygon.difference(geom)
+        else:
+            multipolygon = multipolygon.union(geom)
 
-    inner_polygon = _convert_lines_to_multipolygon(inner)
-    if inner_polygon is None:
-        # we need to handle this error in other way
-        warning('Failed to convert inner lines to multipolygon')
-        return outer_polygon
-    return to_multipolygon(outer_polygon.difference(inner_polygon))
+        if multipolygon is None:
+            warning('Failed to compute multipolygon. Failing geometry:', role, geom)
+            return None
+
+    return multipolygon
