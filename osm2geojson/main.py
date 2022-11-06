@@ -545,15 +545,23 @@ def _convert_shapes_to_multipolygon(shapes):
     for role, group in itertools.groupby(shapes, lambda s: s[0]):
         groups.append((role, _convert_lines_to_multipolygon([_[1] for _ in group])))
 
-    # Grab the first one.
-    first_shape = groups.pop(0)
-    if first_shape[0] == 'inner':
-        warning('Failed to create multipolygon. First shape should have "outer" role')
+    multipolygon = None
+    base_index = -1
+    for i, (role, geom) in enumerate(groups):
+        if role == 'outer':
+            multipolygon = geom
+            base_index = i
+            break
+    
+    if base_index > 0:
+        warning('Failed to create multipolygon. Shape with "outer" role not found')
         return None
 
-    multipolygon = first_shape[1]
     # Itterate over the rest if there are any
-    for role, geom in groups:
+    for i, (role, geom) in enumerate(groups):
+        if i == base_index:
+            continue
+
         if role == "inner":
             multipolygon = multipolygon.difference(geom)
         else:
