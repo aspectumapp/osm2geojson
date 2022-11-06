@@ -13,6 +13,8 @@ from shapely.ops import unary_union, linemerge
 
 from .parse_xml import parse as parse_xml
 
+import shapely.wkt
+
 
 logger = logging.getLogger(__name__)
 DEFAULT_POLYGON_FEATURES_FILE = os.path.join(os.path.dirname(__file__), 'polygon-features.json')
@@ -441,8 +443,8 @@ def multipolygon_relation_to_shape(
         rel, refs_index,
         area_keys: Optional[dict] = None, polygon_features: Optional[list] = None
 ):
-    # List of Tuple (role, multipolygon)
-    shapes = []
+    outer = []
+    inner = []
 
     if 'members' in rel:
         members = rel['members']
@@ -469,9 +471,12 @@ def multipolygon_relation_to_shape(
         if isinstance(way_shape['shape'], Polygon):
             way_shape['shape'] = LineString(way_shape['shape'].exterior.coords)
 
-        shapes.append((member['role'], way_shape['shape']))
+        if member['role'] == 'inner':
+            inner.append(way_shape['shape'])
+        else:
+            outer.append(way_shape['shape'])
 
-    multipolygon = _convert_shapes_to_multipolygon(shapes)
+    multipolygon = _convert_shapes_to_multipolygon(outer, inner)
     if multipolygon is None:
         warning('Failed to convert computed shapes to multipolygon', pformat(rel))
         return None
@@ -534,26 +539,57 @@ def _convert_lines_to_multipolygon(lines):
     return to_multipolygon(poly)
 
 
-def _convert_shapes_to_multipolygon(shapes):
-    if len(shapes) < 1:
-        warning('Failed to create multipolygon (Empty)')
+def _convert_shapes_to_multipolygon(outer_shapes, inner_shapes):
+    if len(outer_shapes) < 1:
+        warning('Failed to create multipolygon (Empty outer)')
         return None
 
-    # Intermediate groups
-    groups = []
-    # New group each time it switches role
-    for role, group in itertools.groupby(shapes, lambda s: s[0]):
-        groups.append((role, _convert_lines_to_multipolygon([_[1] for _ in group])))
+    outer_poly_shapes = []
+    for shape in outer_shapes:
+        poly = _convert_lines_to_multipolygon([shape])
+        # if poly is None:
+        #     warning('Failed to convert outer ring to polygon')
+        #     continue
+        outer_poly_shapes.append(poly)
+
+    groups = [[('outer', s)] for s in outer_shapes]
+
+    for inner in inner_shapes:
+        for i, outer_poly in enumerate(outer_poly_shapes):
+            if outer_poly is None:
+                continue
+
+            if outer_poly.intersects(inner):
+                groups[i].append(('inner', inner))
+                break
+        warning('Failed to find outer ring (ignored inner ring)', pformat(inner), shapely.wkt.dumps(inner))
+
+    sorted_shapes = list(itertools.chain(*groups))
+
+    warning('sorted shapes', pformat(sorted_shapes))
+
+    sorted_polygons = []
+    accomulator = []
+    last_role = 'outer'
+    for role, shape in sorted_shapes:
+        if role != last_role:
+            sorted_polygons.append((last_role, _convert_lines_to_multipolygon(accomulator)))
+            last_role = role
+            accomulator = []
+        accomulator.append(shape)
+    sorted_polygons.append((last_role, _convert_lines_to_multipolygon(accomulator)))
 
     # Grab the first one.
-    first_shape = groups.pop(0)
-    if first_shape[0] == 'inner':
-        warning('Failed to create multipolygon. First shape should have "outer" role')
-        return None
+    first_outer_shape = sorted_polygons.pop(0)
+    # warning('groups', pformat(groups))
+    # warning('first shape', pformat(first_outer_shape))
+    # if first_outer_shape[0] == 'inner':
+    #     warning('Failed to create multipolygon. First shape should have "outer" role')
+    #     return None
 
-    multipolygon = first_shape[1]
+    multipolygon = first_outer_shape[1]
     # Itterate over the rest if there are any
-    for role, geom in groups:
+    for role, geom in sorted_polygons:
         if role == "inner":
             multipolygon = multipolygon.difference(geom)
         else:
