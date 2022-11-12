@@ -552,8 +552,8 @@ def _convert_shapes_to_multipolygon(shapes):
             multipolygon = geom
             base_index = i
             break
-    
-    if base_index > 0:
+
+    if base_index < 0:
         warning('Failed to create multipolygon. Shape with "outer" role not found')
         return None
 
