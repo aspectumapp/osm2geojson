@@ -385,6 +385,7 @@ def relation_to_shape(rel, refs_index, area_keys: Optional[dict] = None, polygon
             return multiline_realation_to_shape(rel, refs_index)
     except Exception:
         logger.exception(f'Failed to convert relation to shape: \n {pformat(rel)}')
+        raise
 
 
 def multiline_realation_to_shape(
