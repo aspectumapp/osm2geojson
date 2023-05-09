@@ -26,6 +26,7 @@ Additional parameters for all functions:
 - `log_level` - (default: `'ERROR'`) controls logging level (will print all logs if set as `'INFO'`). More details [here](https://docs.python.org/3/library/logging.html#logging-levels)
 - `area_keys` - (default: `None`) defines which keys and values of an area should be saved from the list of OSM tags, see `areaKeys.json` for the defaults
 - `polygon_features` - (default: `None`) defines a whitelist/blacklist of features to be included in resulting polygons, see `polygon-features.json` for the defaults
+- `raise_on_failure` - (default: `False`) controls whether to throw an exception when geometry generation fails
 
 Other handy methods:
 

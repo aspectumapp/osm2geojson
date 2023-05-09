@@ -75,5 +75,14 @@ class TestOsm2GeoJsonMethods(unittest.TestCase):
         (data, saved_geojson) = get_json_and_geojson_data('issue-35')
         self.assertDictEqual(saved_geojson, json2geojson(data))
 
+    def test_raise_on_failure(self):
+        xml_data = read_data_file('map.osm')
+        saved_geojson = json.loads(read_data_file('map.geojson'))
+
+        with self.assertRaises(Exception):
+            xml2geojson(xml_data, raise_on_failure=True)
+
+        self.assertDictEqual(saved_geojson, xml2geojson(xml_data))
+
 if __name__ == '__main__':
     unittest.main()
