@@ -118,7 +118,7 @@ def _json2shapes(
         if shape is not None:
             shapes.append(shape)
         else:
-            warning('Element not converted', pformat(el))
+            warning('Element not converted', pformat(el['id']))
 
     if not filter_used_refs:
         return shapes
@@ -411,8 +411,8 @@ def relation_to_shape(rel, refs_index, area_keys: Optional[dict] = None, polygon
             return multipolygon_relation_to_shape(rel, refs_index, raise_on_failure=raise_on_failure)
         else:
             return multiline_realation_to_shape(rel, refs_index, raise_on_failure=raise_on_failure)
-    except Exception:
-        message = f'Failed to convert relation to shape: \n {pformat(rel)}'
+    except Exception as e:
+        message = get_message('Failed to convert relation to shape: \n', pformat(e), pformat(rel))
         error(message)
         if raise_on_failure:
             raise Exception(message)
@@ -522,11 +522,11 @@ def multipolygon_relation_to_shape(
         if isinstance(way_shape['shape'], Polygon):
             way_shape['shape'] = LineString(way_shape['shape'].exterior.coords)
 
-        shapes.append((member['role'], way_shape['shape']))
+        shapes.append((member['role'], way_shape['shape'], member['ref']))
 
     multipolygon = _convert_shapes_to_multipolygon(shapes, raise_on_failure=raise_on_failure)
     if multipolygon is None:
-        message = get_message('Failed to convert computed shapes to multipolygon', pformat(rel))
+        message = get_message('Failed to convert computed shapes to multipolygon', pformat(rel['id']))
         warning(message)
         if raise_on_failure:
             raise Exception(message)
@@ -610,15 +610,16 @@ def _convert_shapes_to_multipolygon(shapes, raise_on_failure=False):
             raise Exception(message)
         return None
 
-    # Intermediate groups
+    # Intermediate groups [(role, geom, ids)]
     groups = []
     # New group each time it switches role
     for role, group in itertools.groupby(shapes, lambda s: s[0]):
-        groups.append((role, _convert_lines_to_multipolygon([_[1] for _ in group], raise_on_failure=raise_on_failure)))
+        lines_and_ids = [(_[1], _[2]) for _ in group]
+        groups.append((role, _convert_lines_to_multipolygon([_[0] for _ in lines_and_ids], raise_on_failure=raise_on_failure), [_[1] for _ in lines_and_ids]))
 
     multipolygon = None
     base_index = -1
-    for i, (role, geom) in enumerate(groups):
+    for i, (role, geom, ids) in enumerate(groups):
         if role == 'outer':
             multipolygon = geom
             base_index = i
@@ -631,8 +632,16 @@ def _convert_shapes_to_multipolygon(shapes, raise_on_failure=False):
             raise Exception(message)
         return None
 
+    if not multipolygon.is_valid:
+        group_ids = groups[base_index][2]
+        message = get_message('Failed to create multipolygon. Base shape with role "outer" is invalid. Group ids:', pformat(group_ids))
+        warning(message)
+        if raise_on_failure:
+            raise Exception(message)
+        return None
+
     # Itterate over the rest if there are any
-    for i, (role, geom) in enumerate(groups):
+    for i, (role, geom, ids) in enumerate(groups):
         if i == base_index:
             continue
 
