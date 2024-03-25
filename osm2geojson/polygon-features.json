@@ -54,7 +54,6 @@
             "ditch",
             "hedge",
             "retaining_wall",
-            "wall",
             "spikes"
         ]
     },
@@ -153,5 +152,12 @@
     {
         "key": "indoor",
         "polygon": "all"
+    },
+    {
+        "key": "highway",
+        "polygon": "blacklist",
+        "values": [
+            "steps"
+        ]
     }
 ]
