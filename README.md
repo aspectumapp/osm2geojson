@@ -119,5 +119,6 @@ $ ./update-osm-polygon-features.sh
 
 ### ToDo
 
+ * Rewrite _convert_shapes_to_multipolygon (and other multipolygon methods) to support complex situations with enclaves
  * Add tests and examples for cli tool
  * Add actions related to cli tool (more info https://github.com/aspectumapp/osm2geojson/pull/32#issuecomment-1073386381)
