@@ -118,7 +118,13 @@ def _json2shapes(
         if shape is not None:
             shapes.append(shape)
         else:
-            warning('Element not converted', pformat(el['id']))
+            el_type = el.get('type', 'unknown')
+            el_id = el.get('id', 'unknown')
+            # Provide more helpful message for relations with missing members
+            if el_type == 'relation' and 'members' in el:
+                warning(f'Element not converted: {el_type} {el_id} (incomplete relation - some member ways/nodes are missing or have no geometry)')
+            else:
+                warning('Element not converted', pformat(el_id))
 
     if not filter_used_refs:
         return shapes
