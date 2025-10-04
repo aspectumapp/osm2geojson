@@ -164,20 +164,21 @@ def get_ref_name(el):
     return _get_ref_name(el['type'], el['id'])
 
 
-def _get_ref(el_type, id, refs_index):
+def _get_ref(el_type, id, refs_index, silent=False):
     key = _get_ref_name(el_type, id)
     if key in refs_index:
         return refs_index[key]
-    warning('Element not found in refs_index', pformat(el_type), pformat(id))
+    if not silent:
+        logger.debug('Element not found in refs_index: %s %s', el_type, id)
     return None
 
 
-def get_ref(ref_el, refs_index):
-    return _get_ref(ref_el['type'], ref_el['ref'], refs_index)
+def get_ref(ref_el, refs_index, silent=False):
+    return _get_ref(ref_el['type'], ref_el['ref'], refs_index, silent)
 
 
-def get_node_ref(id, refs_index):
-    return _get_ref('node', id, refs_index)
+def get_node_ref(id, refs_index, silent=False):
+    return _get_ref('node', id, refs_index, silent)
 
 
 def build_refs_index(elements):
@@ -282,11 +283,13 @@ def way_to_shape(
                 return None
 
     elif 'ref' in way:
-        ref = get_ref(way, refs_index)
+        # Try to get ref silently first (common in incomplete relation data)
+        ref = get_ref(way, refs_index, silent=True)
         if not ref:
-            message = get_message('Ref for way not found in index', pformat(way))
-            warning(message)
+            # Only log debug message, not a warning, as this is expected with incomplete data
+            logger.debug('Ref for way not found in index: %s (ref: %s)', way.get('type'), way.get('ref'))
             if raise_on_failure:
+                message = get_message('Ref for way not found in index', pformat(way))
                 raise Exception(message)
             return None
 
@@ -422,6 +425,23 @@ def is_geometry_polygon_without_exceptions(node, polygon_features: Optional[list
     return False
 
 
+def log_missing_members_info(rel_id, missing_members, total_members, converted_count):
+    """Log informative message about missing relation members.
+    
+    Args:
+        rel_id: The relation ID
+        missing_members: List of missing member dictionaries
+        total_members: Total number of members in the relation
+        converted_count: Number of successfully converted members
+    """
+    if missing_members and converted_count > 0:
+        missing_info = ', '.join([f"{m.get('role', 'no-role')}:{m['ref']}" for m in missing_members[:5]])
+        if len(missing_members) > 5:
+            missing_info += f' (and {len(missing_members) - 5} more)'
+        logger.info('Relation %s: converted with %d/%d members (missing: %s)', 
+                    rel_id, converted_count, total_members, missing_info)
+
+
 def relation_to_shape(rel, refs_index, area_keys: Optional[dict] = None, polygon_features: Optional[list] = None, raise_on_failure = False):
     if 'center' in rel:
         center = rel['center']
@@ -448,6 +468,8 @@ def multiline_realation_to_shape(
         raise_on_failure = False
 ):
     lines = []
+    missing_members = []
+    unhandled_members = []
 
     if 'members' in rel:
         members = rel['members']
@@ -465,22 +487,22 @@ def multiline_realation_to_shape(
         if member['type'] == 'way':
             way_shape = way_to_shape(member, refs_index, area_keys, polygon_features, raise_on_failure=raise_on_failure)
         elif member['type'] == 'relation':
-            found_member = get_ref(member, refs_index)
+            found_member = get_ref(member, refs_index, silent=True)
             if found_member:
                 found_member['used'] = rel['id']
             way_shape = element_to_shape(member, refs_index, area_keys, polygon_features, raise_on_failure=raise_on_failure)
         else:
-            message = get_message('multiline member not handled', pformat(member))
-            warning(message)
+            unhandled_members.append(member)
+            logger.debug('Multiline member type not handled: %s (role: %s)', member['type'], member.get('role', ''))
             if raise_on_failure:
+                message = get_message('multiline member not handled', pformat(member))
                 raise Exception(message)
             continue
 
         if way_shape is None:
-            # throw exception
-            message = get_message('Failed to make way in relation', pformat(rel))
-            warning(message)
+            missing_members.append(member)
             if raise_on_failure:
+                message = get_message('Failed to make way in relation', pformat(rel))
                 raise Exception(message)
             continue
 
@@ -488,6 +510,9 @@ def multiline_realation_to_shape(
             # this should not happen on real data
             way_shape['shape'] = LineString(way_shape['shape'].exterior.coords)
         lines.append(way_shape['shape'])
+    
+    # Log info about missing members if any
+    log_missing_members_info(rel.get('id', 'unknown'), missing_members, len(members), len(lines))
 
     if len(lines) < 1:
         message = get_message('No lines for multiline relation', pformat(rel))
@@ -511,6 +536,8 @@ def multipolygon_relation_to_shape(
 ):
     # List of Tuple (role, multipolygon)
     shapes = []
+    missing_members = []
+    non_way_members = []
 
     if 'members' in rel:
         members = rel['members']
@@ -526,9 +553,10 @@ def multipolygon_relation_to_shape(
 
     for member in members:
         if member['type'] != 'way':
-            message = get_message('Multipolygon member not handled', pformat(member))
-            warning(message)
+            non_way_members.append(member)
+            logger.debug('Multipolygon member type not handled: %s (role: %s)', member['type'], member.get('role', ''))
             if raise_on_failure:
+                message = get_message('Multipolygon member not handled', pformat(member))
                 raise Exception(message)
             continue
 
@@ -536,10 +564,9 @@ def multipolygon_relation_to_shape(
 
         way_shape = way_to_shape(member, refs_index, area_keys, polygon_features, raise_on_failure=raise_on_failure)
         if way_shape is None:
-            # throw exception
-            message = get_message('Failed to make way', pformat(member), 'in relation', pformat(rel))
-            warning(message)
+            missing_members.append(member)
             if raise_on_failure:
+                message = get_message('Failed to make way', pformat(member), 'in relation', pformat(rel))
                 raise Exception(message)
             continue
 
@@ -547,6 +574,9 @@ def multipolygon_relation_to_shape(
             way_shape['shape'] = LineString(way_shape['shape'].exterior.coords)
 
         shapes.append((member['role'], way_shape['shape'], member['ref']))
+    
+    # Log info about missing members if any
+    log_missing_members_info(rel.get('id', 'unknown'), missing_members, len(members), len(shapes))
 
     multipolygon = _convert_shapes_to_multipolygon(shapes, raise_on_failure=raise_on_failure)
     if multipolygon is None:
