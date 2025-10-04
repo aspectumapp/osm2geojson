@@ -84,5 +84,22 @@ class TestOsm2GeoJsonMethods(unittest.TestCase):
 
         self.assertDictEqual(saved_geojson, xml2geojson(xml_data))
 
+    def test_issue_52_highway_service_closed(self):
+        """
+        Test that closed highway=service way is converted to LineString, not Polygon.
+        This is a regression test for the blacklist rule bug where highway tags
+        with blacklist rules were incorrectly treating all non-blacklisted values
+        as polygons, even when there was also a whitelist rule.
+        
+        Way 60611389 is a closed service road (Moraine Lake Road parking aisle)
+        that should be rendered as a LineString, not a Polygon.
+        """
+        (data, saved_geojson) = get_json_and_geojson_data('issue-52-highway-service-closed')
+        result = json2geojson(data)
+        
+        # Verify it's a LineString, not a Polygon
+        self.assertEqual(result['features'][0]['geometry']['type'], 'LineString')
+        self.assertDictEqual(saved_geojson, result)
+
 if __name__ == '__main__':
     unittest.main()
