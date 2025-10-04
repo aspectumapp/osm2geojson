@@ -387,6 +387,15 @@ def is_geometry_polygon(node, area_keys: Optional[dict] = None, polygon_features
 def is_geometry_polygon_without_exceptions(node, polygon_features: Optional[list] = None):
     polygon_features = polygon_features or _default_polygon_features
     tags = node['tags']
+    matched_blacklist_key = None
+    keys_with_whitelist = set()
+    
+    # First pass: identify which keys have whitelist rules
+    for rule in polygon_features:
+        if rule['key'] in tags and rule['polygon'] == 'whitelist':
+            keys_with_whitelist.add(rule['key'])
+    
+    # Second pass: evaluate rules
     for rule in polygon_features:
         if rule['key'] in tags:
             if rule['polygon'] == 'all':
@@ -394,7 +403,16 @@ def is_geometry_polygon_without_exceptions(node, polygon_features: Optional[list
             if rule['polygon'] == 'whitelist' and tags[rule['key']] in rule['values']:
                 return True
             if rule['polygon'] == 'blacklist':
-                return tags[rule['key']] not in rule['values']
+                if tags[rule['key']] in rule['values']:
+                    return False
+                # Value is not in blacklist, remember this key
+                # But only if it doesn't have a whitelist rule
+                if rule['key'] not in keys_with_whitelist:
+                    matched_blacklist_key = rule['key']
+    
+    # If we matched a blacklist rule but value wasn't blacklisted, it's a polygon
+    if matched_blacklist_key is not None:
+        return True
     return False
 
 
