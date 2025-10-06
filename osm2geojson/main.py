@@ -396,7 +396,7 @@ def is_geometry_polygon(node, area_keys: Optional[dict] = None, polygon_features
 def is_geometry_polygon_without_exceptions(node, polygon_features: Optional[list] = None):
     """
     Determine if a node should be treated as a polygon based on its tags.
-    
+
     Logic precedence:
     1. Blacklists take first precedence: any tag/value on a blacklist -> NOT a polygon
     2. Whitelists take second precedence: any tag/value on a whitelist -> IS a polygon
@@ -405,13 +405,13 @@ def is_geometry_polygon_without_exceptions(node, polygon_features: Optional[list
     """
     polygon_features = polygon_features or _default_polygon_features
     tags = node['tags']
-    
+
     # First pass: check blacklists (highest precedence)
     for rule in polygon_features:
         if rule['key'] in tags and rule['polygon'] == 'blacklist':
             if tags[rule['key']] in rule['values']:
                 return False
-    
+
     # Second pass: check whitelists and "all" rules
     for rule in polygon_features:
         if rule['key'] in tags:
@@ -419,7 +419,7 @@ def is_geometry_polygon_without_exceptions(node, polygon_features: Optional[list
                 return True
             if rule['polygon'] == 'whitelist' and tags[rule['key']] in rule['values']:
                 return True
-    
+
     # Default: not a polygon
     return False
 
