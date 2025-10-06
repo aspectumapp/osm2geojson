@@ -7,11 +7,36 @@ class TestIsGeometryPolygon(unittest.TestCase):
     """
     Unit tests for is_geometry_polygon - the main function that determines
     if an element should be rendered as a polygon.
-    
+
     This function handles high-precedence tags (area, type=multipolygon),
     geometry validation, and delegates to is_geometry_polygon_without_exceptions
     for whitelist/blacklist rule evaluation.
     """
+
+    def test_no_tags_returns_false(self):
+        """
+        Test that elements without tags are not polygons.
+        """
+        node = {}
+        result = is_geometry_polygon(node)
+        self.assertFalse(result, "Element without tags should NOT be a polygon")
+
+    def test_area_no_highest_precedence(self):
+        """
+        Test that area=no takes precedence over everything.
+        Example: area=no + type=multipolygon + building=yes
+        Should NOT be a polygon because area=no is checked first.
+        """
+        node = {
+            'tags': {
+                'area': 'no',
+                'type': 'multipolygon',
+                'building': 'yes'
+            }
+        }
+        result = is_geometry_polygon(node)
+        self.assertFalse(result,
+            "area=no should override type=multipolygon and other polygon tags")
 
     def test_area_yes_overrides_blacklist(self):
         """
@@ -60,6 +85,76 @@ class TestIsGeometryPolygon(unittest.TestCase):
         result = is_geometry_polygon(node)
         self.assertTrue(result,
             "area=yes should make any feature a polygon")
+
+    def test_type_multipolygon_makes_polygon(self):
+        """
+        Test that type=multipolygon makes element a polygon.
+        Should be a polygon.
+        """
+        node = {
+            'tags': {
+                'type': 'multipolygon',
+                'name': 'Some relation'
+            }
+        }
+        result = is_geometry_polygon(node)
+        self.assertTrue(result,
+            "type=multipolygon should make element a polygon")
+
+    def test_type_multipolygon_overrides_blacklist(self):
+        """
+        Test that type=multipolygon takes precedence over blacklisted tags.
+        Example: type=multipolygon + highway=steps (blacklisted)
+        Should be a polygon.
+        """
+        node = {
+            'tags': {
+                'type': 'multipolygon',
+                'highway': 'steps'
+            }
+        }
+        result = is_geometry_polygon(node)
+        self.assertTrue(result,
+            "type=multipolygon should override blacklisted tags")
+
+    def test_open_geometry_returns_false(self):
+        """
+        Test that elements with non-closed geometry are not polygons.
+        If first and last coords don't match, should NOT be a polygon.
+        """
+        node = {
+            'tags': {
+                'building': 'yes'
+            },
+            'geometry': [
+                {'lat': 0.0, 'lon': 0.0},
+                {'lat': 0.0, 'lon': 1.0},
+                {'lat': 1.0, 'lon': 1.0},
+                {'lat': 1.0, 'lon': 0.5}  # Different from first point
+            ]
+        }
+        result = is_geometry_polygon(node)
+        self.assertFalse(result,
+            "Element with open geometry should NOT be a polygon")
+
+    def test_closed_geometry_with_polygon_tags(self):
+        """
+        Test that elements with closed geometry and polygon tags are polygons.
+        """
+        node = {
+            'tags': {
+                'building': 'yes'
+            },
+            'geometry': [
+                {'lat': 0.0, 'lon': 0.0},
+                {'lat': 0.0, 'lon': 1.0},
+                {'lat': 1.0, 'lon': 1.0},
+                {'lat': 0.0, 'lon': 0.0}  # Same as first point
+            ]
+        }
+        result = is_geometry_polygon(node)
+        self.assertTrue(result,
+            "Element with closed geometry and polygon tags should be a polygon")
 
     def test_area_other_value_falls_through(self):
         """
