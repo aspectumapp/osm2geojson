@@ -394,34 +394,33 @@ def is_geometry_polygon(node, area_keys: Optional[dict] = None, polygon_features
 
 
 def is_geometry_polygon_without_exceptions(node, polygon_features: Optional[list] = None):
+    """
+    Determine if a node should be treated as a polygon based on its tags.
+    
+    Logic precedence:
+    1. Blacklists take first precedence: any tag/value on a blacklist -> NOT a polygon
+    2. Whitelists take second precedence: any tag/value on a whitelist -> IS a polygon
+    3. "all" rules: any tag with polygon="all" -> IS a polygon
+    4. Default: if no rules match -> NOT a polygon
+    """
     polygon_features = polygon_features or _default_polygon_features
     tags = node['tags']
-    matched_blacklist_key = None
-    keys_with_whitelist = set()
     
-    # First pass: identify which keys have whitelist rules
+    # First pass: check blacklists (highest precedence)
     for rule in polygon_features:
-        if rule['key'] in tags and rule['polygon'] == 'whitelist':
-            keys_with_whitelist.add(rule['key'])
+        if rule['key'] in tags and rule['polygon'] == 'blacklist':
+            if tags[rule['key']] in rule['values']:
+                return False
     
-    # Second pass: evaluate rules
+    # Second pass: check whitelists and "all" rules
     for rule in polygon_features:
         if rule['key'] in tags:
             if rule['polygon'] == 'all':
                 return True
             if rule['polygon'] == 'whitelist' and tags[rule['key']] in rule['values']:
                 return True
-            if rule['polygon'] == 'blacklist':
-                if tags[rule['key']] in rule['values']:
-                    return False
-                # Value is not in blacklist, remember this key
-                # But only if it doesn't have a whitelist rule
-                if rule['key'] not in keys_with_whitelist:
-                    matched_blacklist_key = rule['key']
     
-    # If we matched a blacklist rule but value wasn't blacklisted, it's a polygon
-    if matched_blacklist_key is not None:
-        return True
+    # Default: not a polygon
     return False
 
 
