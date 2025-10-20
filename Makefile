@@ -22,7 +22,7 @@ install-dev:
 	pip install -e ".[dev]"
 
 test:
-	pytest
+	pytest -vv
 
 test-coverage:
 	pytest --cov=osm2geojson --cov-report=html --cov-report=term
