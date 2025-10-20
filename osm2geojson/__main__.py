@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
+import argparse
+import json
 import os
 import sys
-import json
-import argparse
 
 from .main import json2geojson, xml2geojson
 
@@ -15,33 +15,17 @@ def setup_parser() -> argparse.ArgumentParser:
         return v
 
     parser = argparse.ArgumentParser(prog=__package__)
+    parser.add_argument("infile", type=file, help="OSM or Overpass JSON file to convert to GeoJSON")
     parser.add_argument(
-        "infile",
-        type=file,
-        help="OSM or Overpass JSON file to convert to GeoJSON"
+        "outfile", help="write output of the processing to the specified file (uses stdout for '-')"
     )
     parser.add_argument(
-        "outfile",
-        help="write output of the processing to the specified file (uses stdout for '-')"
-    )
-    parser.add_argument(
-        "-f",
-        "--force",
-        action="store_true",
-        help="allow overwriting of existing file"
+        "-f", "--force", action="store_true", help="allow overwriting of existing file"
     )
     logging = parser.add_mutually_exclusive_group()
+    logging.add_argument("-q", "--quiet", action="store_true", help="suppress logging output")
     logging.add_argument(
-        "-q",
-        "--quiet",
-        action="store_true",
-        help="suppress logging output"
-    )
-    logging.add_argument(
-        "-v",
-        "--verbose",
-        action="store_true",
-        help="enable verbose logging output"
+        "-v", "--verbose", action="store_true", help="enable verbose logging output"
     )
     parser.add_argument(
         "-i",
@@ -49,33 +33,33 @@ def setup_parser() -> argparse.ArgumentParser:
         type=int,
         metavar="N",
         default=None,
-        help="indentation using N spaces for the output file (defaults to none)"
+        help="indentation using N spaces for the output file (defaults to none)",
     )
     parser.add_argument(
         "--reader",
         choices=("json", "xml", "auto"),
         default="auto",
-        help="specify the input file format (either OSM XML or Overpass JSON/XML), defaults to auto-detect"
+        help="specify the input file format (either OSM XML or Overpass JSON/XML), defaults to auto-detect",
     )
     parser.add_argument(
         "--no-unused-filter",
         action="store_false",
         dest="filter_used_refs",
-        help="don't filter unused references (only in shape JSON)"
+        help="don't filter unused references (only in shape JSON)",
     )
     parser.add_argument(
         "--areas",
         type=file,
         default=None,
         metavar="file",
-        help="JSON file defining the keys that should be included from areas (uses defaults if omitted)"
+        help="JSON file defining the keys that should be included from areas (uses defaults if omitted)",
     )
     parser.add_argument(
         "--polygons",
         type=file,
         default=None,
         metavar="file",
-        help="JSON file defining the allowed/restricted polygon features (uses defaults if omitted)"
+        help="JSON file defining the allowed/restricted polygon features (uses defaults if omitted)",
     )
     return parser
 
@@ -85,9 +69,9 @@ def main(args=None) -> int:
     parser = setup_parser()
     args = parser.parse_args(args)
 
-    if args.reader == "xml" or args.reader == "auto" and args.infile.endswith((".osm", ".xml")):
+    if args.reader == "xml" or (args.reader == "auto" and args.infile.endswith((".osm", ".xml"))):
         parser_function = xml2geojson
-    elif args.reader == "json" or args.reader == "auto" and args.infile.endswith(".json"):
+    elif args.reader == "json" or (args.reader == "auto" and args.infile.endswith(".json")):
         parser_function = json2geojson
     else:
         print("Auto-detecting input file format failed. Consider using --reader.", file=sys.stderr)
@@ -95,8 +79,8 @@ def main(args=None) -> int:
 
     if args.outfile != "-" and os.path.exists(args.outfile) and not args.force:
         print(
-            "Output file '{}' already exists. Consider using -f to force overwriting.".format(args.outfile),
-            file=sys.stderr
+            f"Output file '{args.outfile}' already exists. Consider using -f to force overwriting.",
+            file=sys.stderr,
         )
         return 1
 
@@ -125,7 +109,7 @@ def main(args=None) -> int:
         filter_used_refs=args.filter_used_refs,
         log_level=log_level,
         area_keys=area_keys,
-        polygon_features=polygon_features
+        polygon_features=polygon_features,
     )
 
     indent = args.indent

@@ -2,5 +2,6 @@
     "python.testing.unittestArgs": ["discover"],
     "python.testing.pytestEnabled": false,
     "python.testing.nosetestsEnabled": false,
-    "python.testing.unittestEnabled": true
+    "python.testing.unittestEnabled": true,
+    "makefile.configureOnOpen": false
 }

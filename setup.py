@@ -1,8 +1,10 @@
 from os import path
+
 from setuptools import setup
 
+
 dirname = path.abspath(path.dirname(__file__))
-with open(path.join(dirname, 'README.md'), encoding='utf-8') as f:
+with open(path.join(dirname, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 
@@ -12,20 +14,18 @@ def parse_requirements(filename):
 
 
 setup(
-    name='osm2geojson',
-    version='0.2.9',
-    license='MIT',
-    description='Parse OSM and Overpass JSON',
+    name="osm2geojson",
+    version="0.2.9",
+    license="MIT",
+    description="Parse OSM and Overpass JSON",
     long_description=long_description,
-    long_description_content_type='text/markdown',
-    keywords='geometry gis osm parsing',
-    author='Parfeniuk Mykola',
-    author_email='mikola.parfenyuck@gmail.com',
-    url='https://github.com/aspectumapp/osm2geojson',
-    packages=['osm2geojson'],
+    long_description_content_type="text/markdown",
+    keywords="geometry gis osm parsing",
+    author="Parfeniuk Mykola",
+    author_email="mikola.parfenyuck@gmail.com",
+    url="https://github.com/aspectumapp/osm2geojson",
+    packages=["osm2geojson"],
     include_package_data=True,
     install_requires=parse_requirements("requirements.txt"),
-    entry_points={
-        'console_scripts': ['osm2geojson=osm2geojson.__main__.main:main']
-    }
+    entry_points={"console_scripts": ["osm2geojson=osm2geojson.__main__.main:main"]},
 )

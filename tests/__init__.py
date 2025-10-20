@@ -1,3 +1,3 @@
-from .parse_xml import TestParseXmlMethods
-from .main import TestOsm2GeoJsonMethods
+from .test_main import TestOsm2GeoJsonMethods
+from .test_parse_xml import TestParseXmlMethods
 from .test_polygon_logic import TestIsGeometryPolygon, TestIsGeometryPolygonWithoutExceptions
