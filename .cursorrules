@@ -15,7 +15,7 @@ make test           # Run tests
 ### Key Files
 - `osm2geojson/main.py` - Core conversion logic
 - `osm2geojson/parse_xml.py` - XML parsing
-- `pyproject.toml` - Project configuration
+- `pyproject.toml` - Single source for all config (no setup.py/requirements.txt)
 - `tests/conftest.py` - Pytest fixtures
 
 ### Code Style

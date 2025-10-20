@@ -429,7 +429,7 @@ git submodule update --init --recursive
 
 - **Don't edit submodule files** (osm-polygon-features/, id-area-keys/)
 - **Don't commit without testing** (`make test`)
-- **Don't use `setup.py`** for config (use pyproject.toml)
+- **pyproject.toml is the single source** for all config (no setup.py)
 - **Don't commit** `__pycache__`, `*.pyc`, `dist/`
 - **Don't force push** to main/master
 - **Don't change too much at once** - small PRs

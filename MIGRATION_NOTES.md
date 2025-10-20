@@ -93,16 +93,19 @@ make all           # Check everything
 
 ## Configuration Files
 
-### Old
-- `setup.py` - Project metadata
-- `setup.cfg` - Additional config
-- `requirements.txt` - Dependencies
-- `lint.sh` - Linting script
+### Old (REMOVED)
+- ❌ `setup.py` - Project metadata
+- ❌ `setup.cfg` - Additional config
+- ❌ `requirements.txt` - Dependencies
+- ❌ `requirements-dev.txt` - Dev dependencies
+- ❌ `MANIFEST.in` - Package data
+- ❌ `lint.sh` - Linting script
+- ❌ `release.sh` - Manual release script
 
 ### New
-- `pyproject.toml` - **Everything in one file!**
-- `Makefile` - Common tasks
-- `.pre-commit-config.yaml` - Automated checks
+- ✅ `pyproject.toml` - **Everything in one file!**
+- ✅ `Makefile` - Common tasks
+- ✅ `.pre-commit-config.yaml` - Automated checks
 
 ---
 
@@ -138,8 +141,8 @@ Use `make lint` or `ruff check .`
 ### "I was using release.sh"
 See `RELEASE_GUIDE.md` - now it's automated via GitHub Releases
 
-### "Where's setup.py?"
-Still there for backward compatibility, but `pyproject.toml` is the source of truth
+### "Where's setup.py / requirements.txt?"
+**Removed**. Modern Python uses `pyproject.toml` exclusively (PEP 621). All metadata, dependencies, and tool config are now in one file.
 
 ### "I want the old way back"
 The old scripts are in git history if you need them:

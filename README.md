@@ -96,7 +96,7 @@ $ git clone --recurse-submodules https://github.com/aspectumapp/osm2geojson.git
 Setup package
 
 ```sh
-$ python setup.py develop
+$ pip install -e ".[dev]"
 ```
 
 Run tests

@@ -164,8 +164,9 @@ make all               # Formats, lints, type checks, and tests
 
 ### For Package Maintainers
 
-1. **setup.py can be kept temporarily** for backward compatibility, but pyproject.toml is now the source of truth
-2. **Building**: Use `python -m build` instead of `python setup.py sdist bdist_wheel`
+1. **All old files removed**: `setup.py`, `setup.cfg`, `requirements.txt`, `requirements-dev.txt`, `MANIFEST.in`
+2. **pyproject.toml is the single source** for all configuration
+3. **Building**: Use `python -m build` instead of `python setup.py sdist bdist_wheel`
 3. **Installing**: `pip install -e ".[dev]"` installs with dev dependencies
 
 ### For Contributors
