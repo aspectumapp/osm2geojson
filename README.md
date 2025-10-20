@@ -214,6 +214,17 @@ make test-coverage
 ./update-osm-polygon-features.sh
 ```
 
+### Releasing
+
+See [RELEASE_GUIDE.md](RELEASE_GUIDE.md) for the release process.
+
+Quick version bump:
+```bash
+./bump_version.sh 0.3.0  # Updates version, commits, and tags
+git push origin master --tags
+# Then create GitHub Release to publish to PyPI
+```
+
 ### Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed development guidelines.

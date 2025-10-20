@@ -34,13 +34,33 @@ make clean
 make all  # Run all tests and checks
 ```
 
-### 2. Update Version
+### 2. Bump Version, Commit, and Tag
 
-Edit `pyproject.toml`:
-```toml
-[project]
-version = "0.2.10"  # Update this
+**Option A: Use the bump script (recommended)**
+```bash
+./bump_version.sh 0.3.0
 ```
+
+This script will:
+- ✅ Validate version format
+- ✅ Check git status is clean
+- ✅ Update `pyproject.toml`
+- ✅ Create git commit: `"chore: bump version to 0.3.0"`
+- ✅ Create git tag: `v0.3.0`
+- ✅ Show next steps
+
+**Option B: Manual process**
+```bash
+# Edit version
+vim pyproject.toml  # Change version = "0.3.0"
+
+# Commit and tag
+git add pyproject.toml
+git commit -m "chore: bump version to 0.3.0"
+git tag -a v0.3.0 -m "Release version 0.3.0"
+```
+
+**Important**: Version is read from `pyproject.toml` automatically. No need to update anywhere else!
 
 ### 3. Test the Build
 
@@ -59,19 +79,11 @@ pip install dist/osm2geojson-*.whl  # Test installation
 - Update `CHANGELOG.md` (if exists) with release notes
 - Document any breaking changes
 
-### 5. Commit and Tag
+### 5. Push to GitHub
 
 ```bash
-# Commit version bump
-git add pyproject.toml
-git commit -m "Release v0.2.10"
-
-# Create git tag
-git tag -a v0.2.10 -m "Release version 0.2.10"
-
-# Push everything
-git push origin master
-git push origin v0.2.10
+# Push commit and tag (if you used bump_version.sh, it already created them)
+git push origin master --tags
 ```
 
 ### 6. Create GitHub Release
@@ -182,16 +194,19 @@ To test before releasing to production PyPI:
 
 ## Version Numbering
 
-We use [Semantic Versioning](https://semver.org/):
+We use [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`
 
-- **Major** (1.0.0): Breaking changes
-- **Minor** (0.1.0): New features, backward compatible
-- **Patch** (0.0.1): Bug fixes, backward compatible
+- **MAJOR** (X.0.0): Breaking changes / incompatible API changes
+- **MINOR** (0.X.0): New features, backward compatible (**resets PATCH to 0**)
+- **PATCH** (0.0.X): Bug fixes, backward compatible
 
-Examples:
-- `0.2.9` → `0.2.10`: Bug fixes
-- `0.2.9` → `0.3.0`: New features
-- `0.2.9` → `1.0.0`: Breaking changes
+### Examples from 0.2.9:
+
+| Change Type | New Version | When to Use |
+|-------------|-------------|-------------|
+| Bug fixes, features | `0.2.10` | Fixed a bug, small feature |
+| Breaking changes | `0.3.0` ✨ | Added new large feature, or breaking change |
+| Go live! | `1.0.0` | Ready for production |
 
 ## Checklist
 
@@ -211,16 +226,18 @@ Before releasing, verify:
 ## Quick Reference
 
 ```bash
-# Complete release in one go
+# Complete release workflow
 make clean
 make all                           # Test everything
-vim pyproject.toml                # Update version
-make test-build                   # Test build
-git add pyproject.toml
-git commit -m "Release v0.2.10"
-git tag -a v0.2.10 -m "Release version 0.2.10"
-git push origin master --tags
+./bump_version.sh 0.3.0           # Updates pyproject.toml, commits, and tags
+git push origin master --tags      # Push everything
 # Then create GitHub Release (triggers PyPI publish)
+```
+
+**Undo if needed** (before pushing):
+```bash
+git reset --hard HEAD~1
+git tag -d v0.3.0
 ```
 
 ## Help
