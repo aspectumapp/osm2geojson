@@ -7,7 +7,7 @@ name = "osm2geojson"
 version = "0.2.9"
 description = "Parse OSM and Overpass JSON"
 readme = "README.md"
-license = "MIT"
+license = {text = "MIT"}
 authors = [
     {name = "Parfeniuk Mykola", email = "mikola.parfenyuck@gmail.com"}
 ]
