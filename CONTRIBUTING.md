@@ -1,244 +1,327 @@
 # Contributing to osm2geojson
 
-Thank you for your interest in contributing to osm2geojson! This document provides guidelines and instructions for contributing to the project.
+Thank you for your interest in contributing to osm2geojson!
 
-> **💡 Quick Start:** For a quick reference guide with common commands, see [DEVELOPMENT_QUICKSTART.md](DEVELOPMENT_QUICKSTART.md)
+**Quick Links**: [AI Guide](AI_AGENT_GUIDE.md) | [Migration Notes](MIGRATION_NOTES.md) | [Release Guide](RELEASE_GUIDE.md) | [Docs Index](docs/README.md)
+
+---
+
+## Quick Reference
+
+```bash
+# Setup (one-time)
+git clone --recurse-submodules https://github.com/aspectumapp/osm2geojson.git
+cd osm2geojson
+make setup              # Install deps + pre-commit hooks
+
+# Daily workflow
+make format             # Auto-format code
+make lint               # Check code quality
+make test               # Run tests
+make all                # Run all checks (before committing!)
+
+# Debugging
+pytest tests/test_main.py::test_name -vv    # Run specific test
+pytest --pdb                                 # Debug on failure
+ruff check --diff .                          # See what would change
+```
+
+---
 
 ## Development Setup
 
 ### Prerequisites
-
 - Python 3.8 or higher
 - Git
 
-### Getting Started
-
-1. **Clone the repository with submodules:**
-
-   ```bash
-   git clone --recurse-submodules https://github.com/aspectumapp/osm2geojson.git
-   cd osm2geojson
-   ```
-
-2. **Create a virtual environment:**
-
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. **Install the package in development mode with dev dependencies:**
-
-   ```bash
-   pip install -e ".[dev]"
-   ```
-
-4. **Install pre-commit hooks:**
-
-   ```bash
-   pre-commit install
-   ```
-
-   This will automatically run linters and formatters before each commit.
-
-## Code Quality Standards
-
-This project follows modern Python best practices and uses several tools to maintain code quality:
-
-### Formatting
-
-We use **Ruff** for both linting and formatting (replacing Black, isort, and flake8):
+### Installation
 
 ```bash
-# Format code
-ruff format .
+# Clone with submodules
+git clone --recurse-submodules https://github.com/aspectumapp/osm2geojson.git
+cd osm2geojson
 
-# Check formatting without making changes
-ruff format --check .
+# Complete setup (one command)
+make setup
 ```
 
-### Linting
+This will:
+- Install package in editable mode with dev dependencies
+- Install pre-commit hooks (auto-format on commit)
 
+**Manual setup** (if needed):
 ```bash
-# Run linter
-ruff check .
-
-# Auto-fix issues where possible
-ruff check --fix .
+pip install -e ".[dev]"
+pre-commit install
 ```
 
-### Type Checking
-
-We use **mypy** for static type checking:
-
+### Verify Installation
 ```bash
-mypy osm2geojson
+make test              # Should pass all tests
 ```
 
-### Running All Quality Checks
+---
 
+## Development Workflow
+
+### Making Changes
+
+1. **Create a branch**
+   ```bash
+   git checkout -b feature/your-feature-name
+   # or: git checkout -b fix/bug-description
+   ```
+
+2. **Make changes**
+   - Edit code
+   - Add/update tests
+   - Update documentation if needed
+
+3. **Format & test**
+   ```bash
+   make format        # Auto-format
+   make test          # Verify tests pass
+   ```
+
+4. **Commit**
+   ```bash
+   git add .
+   git commit -m "feat: your change description"
+   # Pre-commit hooks run automatically
+   ```
+
+5. **Push & create PR**
+   ```bash
+   git push origin feature/your-feature-name
+   # Then create Pull Request on GitHub
+   ```
+
+### Before Committing
+**Always run:**
 ```bash
-# Run all checks before committing
-ruff format --check .
-ruff check .
-mypy osm2geojson
+make all    # Formats, lints, type-checks, and tests
 ```
+
+### Commit Message Format
+```
+type: description
+
+Types: feat, fix, docs, style, refactor, test, chore
+Examples:
+  feat: add support for custom polygon features
+  fix: handle empty geometry collections
+  docs: update README with new examples
+```
+
+---
+
+## Code Quality
+
+All tools are configured in `pyproject.toml`.
+
+### Commands
+```bash
+make format         # Auto-format with Ruff
+make lint           # Lint with Ruff
+make type-check     # Type check with mypy
+make all            # All checks
+```
+
+### Standards
+- **Line length**: 100 characters
+- **Formatter**: Ruff (replaces Black, isort, flake8)
+- **Type hints**: Optional, add to new code
+- **Docstrings**: Google style for public functions
+
+---
 
 ## Testing
 
 ### Running Tests
 
-We support both `unittest` (legacy) and `pytest` (modern):
-
 ```bash
-# Using unittest (legacy)
-python -m unittest discover
+# Run all tests
+make test
+# or: pytest
 
-# Using pytest (recommended)
-pytest
+# With coverage
+make test-coverage
+# or: pytest --cov=osm2geojson --cov-report=html
 
-# Run with coverage
-pytest --cov=osm2geojson --cov-report=html
-```
-
-### Running Specific Tests
-
-```bash
-# Single test file
-pytest tests/main.py
-
-# Single test class
-pytest tests/main.py::TestOsm2GeoJsonMethods
-
-# Single test method
-pytest tests/main.py::TestOsm2GeoJsonMethods::test_barrier_wall
+# Specific tests
+pytest tests/test_main.py                        # File
+pytest tests/test_main.py::TestClass::test_name  # Specific test
+pytest -k test_barrier                           # By pattern
+pytest -vv                                       # Verbose
+pytest -s                                        # Show print statements
+pytest --pdb                                     # Drop into debugger
 ```
 
 ### Writing Tests
 
-- Place test files in the `tests/` directory
-- Name test files with `test_*.py` prefix
-- Use descriptive test names that explain what is being tested
-- Include docstrings for complex test cases
-- Add test data files to `tests/data/` directory
+Tests use paired files in `tests/data/`:
+- `*.osm` / `*.json` - Input data
+- `*.geojson` - Expected output
 
-Example test structure:
+**Pattern**: Convert input → Compare to expected
 
+**Example with pytest** (preferred):
 ```python
-def test_feature_description():
-    """Test that feature X behaves correctly under condition Y."""
-    # Arrange
-    input_data = ...
-
-    # Act
-    result = function_under_test(input_data)
-
-    # Assert
-    assert result == expected_output
+def test_new_feature(get_json_and_geojson):
+    """Test that feature X works correctly."""
+    data, expected = get_json_and_geojson('test-case-name')
+    result = json2geojson(data)
+    assert result == expected
 ```
 
-## Making Changes
-
-### Branching Strategy
-
-1. Create a new branch for your feature or bugfix:
-   ```bash
-   git checkout -b feature/your-feature-name
-   # or
-   git checkout -b fix/your-bugfix-name
-   ```
-
-2. Make your changes, following the code quality standards above
-
-3. Write or update tests as needed
-
-4. Run the test suite to ensure all tests pass
-
-5. Commit your changes with clear, descriptive commit messages
-
-### Commit Messages
-
-Follow these guidelines for commit messages:
-
-- Use the present tense ("Add feature" not "Added feature")
-- Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
-- Limit the first line to 72 characters or less
-- Reference issues and pull requests when relevant
-
-Examples:
-```
-Add support for custom polygon features
-
-Fix issue #123: Handle empty geometry collections
-
-Update documentation for xml2geojson parameters
+**Example with unittest** (legacy, still supported):
+```python
+def test_new_feature(self):
+    data, expected = get_json_and_geojson_data('test-case-name')
+    result = json2geojson(data)
+    self.assertEqual(expected, result)
 ```
 
-## Pull Request Process
+### Available Fixtures
+See `tests/conftest.py` for pytest fixtures:
+- `read_data_file(filename)`
+- `get_osm_and_geojson(name)`
+- `get_json_and_geojson(name)`
 
-1. **Update documentation** if you've made changes to the API or functionality
+---
 
-2. **Ensure all tests pass** and add new tests for new features
+## Code Style
 
-3. **Update the README.md** if needed with details of changes to the interface
+### Type Hints
+```python
+from typing import Optional, List, Dict
 
-4. **Run all quality checks**:
-   ```bash
-   ruff format --check .
-   ruff check .
-   mypy osm2geojson
-   pytest
-   ```
+def process_element(
+    el: dict,
+    refs_index: dict = None,
+    raise_on_failure: bool = False
+) -> Optional[dict]:
+    """Process an OSM element."""
+    ...
+```
 
-5. **Submit your pull request** with:
-   - A clear title describing the change
-   - A detailed description of what changed and why
-   - References to any related issues
-   - Screenshots or examples if applicable
+### Docstrings (Google Style)
+```python
+def function_name(param1: str, param2: int = 0) -> bool:
+    """Short description.
 
-6. **Respond to feedback** from maintainers and update your PR as needed
+    Longer description if needed.
 
-## Code Style Guidelines
+    Args:
+        param1: Description of param1.
+        param2: Description of param2.
 
-- **Line length**: Maximum 100 characters (enforced by Ruff)
-- **Imports**: Organized automatically by Ruff (similar to isort)
-- **Type hints**: Add type hints to new functions and gradually add to existing code
-- **Docstrings**: Use Google-style docstrings for functions and classes
-- **Naming conventions**:
-  - Functions and variables: `snake_case`
-  - Classes: `PascalCase`
-  - Constants: `UPPER_SNAKE_CASE`
+    Returns:
+        Description of return value.
 
-## Adding Dependencies
+    Raises:
+        ValueError: When something is invalid.
+    """
+    ...
+```
 
-When adding new dependencies:
+### Error Handling Pattern
+```python
+def process(data, raise_on_failure=False):
+    try:
+        result = do_work(data)
+        return result
+    except Exception as e:
+        message = f"Failed: {e}"
+        warning(message)
+        if raise_on_failure:
+            raise Exception(message)
+        return None
+```
 
-1. Add them to the appropriate section in `pyproject.toml`:
-   - Runtime dependencies: `dependencies` array
-   - Development dependencies: `[project.optional-dependencies]` under `dev`
+---
 
-2. Specify minimum versions when possible
+## Project Structure
 
-3. Document why the dependency is needed in your PR
+```
+osm2geojson/
+├── osm2geojson/          # Main package
+│   ├── main.py          # Core conversion logic
+│   ├── parse_xml.py     # XML parsing
+│   ├── helpers.py       # Helper functions
+│   └── __main__.py      # CLI interface
+├── tests/               # Test suite
+│   ├── conftest.py      # Pytest fixtures
+│   ├── test_*.py        # Test files
+│   └── data/            # Test data (OSM/JSON/GeoJSON pairs)
+├── pyproject.toml       # Project config
+└── Makefile             # Development commands
+```
 
-## Updating OSM Polygon Features
+**Don't edit**: `osm-polygon-features/`, `id-area-keys/` (git submodules)
 
-To update the OSM polygon features to the latest version:
+---
 
+## Common Tasks
+
+### Update Submodules
 ```bash
 ./update-osm-polygon-features.sh
 ```
 
-## Questions or Need Help?
+### Debugging Tests
+```bash
+# Verbose output with full tracebacks
+pytest tests/test_main.py::test_name -vv --tb=long
 
-- Check existing [issues](https://github.com/aspectumapp/osm2geojson/issues)
-- Open a new issue for bugs or feature requests
-- Join discussions in pull requests
+# Show print statements
+pytest tests/test_main.py::test_name -s
+
+# Drop into debugger on failure
+pytest tests/test_main.py::test_name --pdb
+```
+
+### Check Linting Issues
+```bash
+# See what would change
+ruff format --diff .
+
+# Auto-fix issues
+ruff check --fix .
+
+# Check specific file
+ruff check osm2geojson/main.py
+```
+
+---
+
+## Pull Request Process
+
+1. **Ensure all checks pass**
+   ```bash
+   make all
+   ```
+
+2. **Update documentation** if needed
+   - README.md for API changes
+   - Docstrings for new functions
+   - This file for workflow changes
+
+3. **Add tests** for new features
+
+4. **Create clear PR description**
+   - What changed and why
+   - Link related issues
+   - Screenshots/examples if applicable
+
+5. **Respond to review feedback**
+
+---
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the same MIT License that covers the project.
+By contributing, you agree that your contributions will be licensed under the MIT License.
 
 ## Recognition
 
-All contributors will be recognized in the project. Thank you for helping make osm2geojson better!
+All contributors will be recognized in the project. Thank you! 🙏

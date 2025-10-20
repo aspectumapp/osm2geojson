@@ -1,0 +1,63 @@
+# AI Agent Rules for osm2geojson
+
+## Quick Reference
+
+**Full Guide**: See [AI_AGENT_GUIDE.md](AI_AGENT_GUIDE.md) for comprehensive documentation.
+
+### Essential Commands
+```bash
+make all            # Format, lint, type-check, test (run before committing!)
+make format         # Auto-format code
+make lint           # Run linter
+make test           # Run tests
+```
+
+### Key Files
+- `osm2geojson/main.py` - Core conversion logic
+- `osm2geojson/parse_xml.py` - XML parsing
+- `pyproject.toml` - Project configuration
+- `tests/conftest.py` - Pytest fixtures
+
+### Code Style
+- Line length: 100 characters
+- Formatter: Ruff (auto-formats on save)
+- Type hints: Optional, gradual adoption
+- Docstrings: Google style for public functions
+
+### Before Committing
+```bash
+make format      # Format code
+make test        # Run tests
+make all         # Full verification
+```
+
+### Common Patterns
+```python
+# Error handling
+def process(data, raise_on_failure=False):
+    try:
+        return do_work(data)
+    except Exception as e:
+        warning(f"Failed: {e}")
+        if raise_on_failure:
+            raise Exception(f"Failed: {e}")
+        return None
+
+# Type hints
+def func(el: dict, refs_index: dict = None) -> Optional[dict]:
+    ...
+```
+
+### Important Notes
+- **Don't edit**: `osm-polygon-features/`, `id-area-keys/` (submodules)
+- **Use**: `make` commands for all tasks
+- **Run**: `make format` after editing code
+- **Test**: `make test` frequently
+
+### Documentation
+- **AI Guide**: [AI_AGENT_GUIDE.md](AI_AGENT_GUIDE.md) - Complete AI guide
+- **Contributing**: [CONTRIBUTING.md](CONTRIBUTING.md) - Developer guide + commands
+- **Migration**: [MIGRATION_NOTES.md](MIGRATION_NOTES.md) - Old → New workflow
+
+---
+Last Updated: 2025-10-16 | Python 3.8+ | Stack: Ruff, pytest, mypy
