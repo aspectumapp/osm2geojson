@@ -134,7 +134,7 @@ def parse_count(node: ElementTree.Element) -> dict:
     Returns:
         Dictionary with count information.
     """
-    bounds, tags, _empty, unhandled = parse_xml_node(node, [])
+    _bounds, tags, _empty, _unhandled = parse_xml_node(node, [])
     item = copy_fields(node, ["id:int"])
     item["type"] = "count"
     if len(tags) > 0:
@@ -175,7 +175,7 @@ def parse_node(node: ElementTree.Element) -> dict:
     Returns:
         Dictionary with node information.
     """
-    bounds, tags, items, unhandled = parse_xml_node(node)
+    _bounds, tags, _items, _unhandled = parse_xml_node(node)
     item = copy_fields(
         node, [], with_meta_fields(["role", "id:int", "ref:int", "lat:float", "lon:float"])
     )
@@ -194,7 +194,7 @@ def parse_way(node: ElementTree.Element) -> dict:
     Returns:
         Dictionary with way information.
     """
-    bounds, tags, nds, unhandled = parse_xml_node(node, ["nd"])
+    _bounds, tags, nds, _unhandled = parse_xml_node(node, ["nd"])
     geometry = []
     nodes = []
     for nd in nds:
@@ -223,7 +223,7 @@ def parse_relation(node: ElementTree.Element) -> dict:
     Returns:
         Dictionary with relation information.
     """
-    bounds, tags, members, unhandled = parse_xml_node(node, ["member"])
+    bounds, tags, members, _unhandled = parse_xml_node(node, ["member"])
 
     relation = copy_fields(node, [], with_meta_fields(["id:int", "ref:int", "role"]))
     relation["type"] = "relation"
@@ -288,7 +288,7 @@ def parse(xml_str: str) -> Optional[dict]:
         print("OSM root node not found!")
         return None
 
-    bounds, tags, elements, unhandled = parse_xml_node(root, ["node", "way", "relation", "count"])
+    _bounds, _tags, elements, unhandled = parse_xml_node(root, ["node", "way", "relation", "count"])
     unhandled.append(root)
     return format_ojson(elements, unhandled)
 

@@ -37,7 +37,7 @@ jobs:
 
       - name: Type check with mypy
         run: |
-          mypy osm2geojson --ignore-missing-imports || true
+          mypy osm2geojson --ignore-missing-imports
 
   test:
     runs-on: ${{ matrix.os }}

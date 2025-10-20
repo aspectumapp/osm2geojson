@@ -143,7 +143,6 @@ ignore = [
     "ERA001",  # Commented code (sometimes useful)
     "ICN001",  # Import conventions (project style)
     "RUF013",  # Implicit Optional (PEP 484 lenient mode)
-    "RUF059",  # Unused unpacked variables (common pattern)
 ]
 
 [tool.ruff.lint.per-file-ignores]

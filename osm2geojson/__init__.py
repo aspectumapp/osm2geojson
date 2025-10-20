@@ -16,7 +16,13 @@ from .main import json2geojson, json2shapes, shape_to_feature, xml2geojson, xml2
 from .parse_xml import parse as parse_xml
 
 
-__version__ = "0.2.9"
+# Version is defined in pyproject.toml
+try:
+    from importlib.metadata import version
+
+    __version__ = version("osm2geojson")
+except Exception:
+    __version__ = "unknown"
 __all__ = [
     "json2geojson",
     "json2shapes",
