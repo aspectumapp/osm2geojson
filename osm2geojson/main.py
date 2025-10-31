@@ -5,7 +5,6 @@ and Overpass API data into GeoJSON format, handling various geometry types
 including nodes, ways, and relations.
 """
 
-import itertools
 import json
 import logging
 import os
@@ -706,21 +705,71 @@ def _convert_shapes_to_multipolygon(shapes, raise_on_failure=False):
             raise Exception(message)
         return None
 
-    # Intermediate groups [(role, geom, ids)]
+    # Group shapes by role using consecutive grouping (itertools.groupby behavior)
+    # This preserves the structure for complex cases like Baarle-Nassau where
+    # outer-inner-outer creates separate enclaves within holes
     groups = []
-    # New group each time it switches role
-    for role, group in itertools.groupby(shapes, lambda s: s[0]):
-        lines_and_ids = [(_[1], _[2]) for _ in group]
-        groups.append(
-            (
-                role,
-                _convert_lines_to_multipolygon(
-                    [_[0] for _ in lines_and_ids], raise_on_failure=raise_on_failure
-                ),
-                [_[1] for _ in lines_and_ids],
-            )
+    i = 0
+    while i < len(shapes):
+        current_role = shapes[i][0]
+        # Collect all consecutive shapes with the same role
+        role_shapes = []
+        while i < len(shapes) and shapes[i][0] == current_role:
+            role_shapes.append(shapes[i])
+            i += 1
+
+        # Convert this group to geometry
+        lines_and_ids = [(s[1], s[2]) for s in role_shapes]
+        geom = _convert_lines_to_multipolygon(
+            [line for line, _ in lines_and_ids], raise_on_failure=raise_on_failure
+        )
+        ids = [ref_id for _, ref_id in lines_and_ids]
+        groups.append((current_role, geom, ids))
+
+    # If we have multiple outer groups, try merging them at the LINE level (fixes issue #54)
+    # This allows disconnected line segments to connect via linemerge
+    # But only use the merge if it actually reduces polygon count (i.e., they connected)
+    outer_indices = [i for i, (role, _, _) in enumerate(groups) if role == "outer"]
+    if len(outer_indices) > 1:
+        # Count current number of outer polygons
+        current_outer_count = 0
+        for i in outer_indices:
+            geom = groups[i][1]
+            if isinstance(geom, MultiPolygon):
+                current_outer_count += len(list(geom.geoms))
+            else:
+                current_outer_count += 1
+
+        # Collect all outer lines from original shapes (before polygon conversion)
+        all_outer_lines = []
+        all_outer_ids = []
+        for role, line, ref_id in shapes:
+            if role == "outer":
+                all_outer_lines.append(line)
+                all_outer_ids.append(ref_id)
+
+        # Convert all outer lines together - linemerge will connect them if possible
+        merged_outers = _convert_lines_to_multipolygon(
+            all_outer_lines, raise_on_failure=raise_on_failure
         )
 
+        # Count polygons in merged result
+        merged_count = 0
+        if isinstance(merged_outers, MultiPolygon):
+            merged_count = len(list(merged_outers.geoms))
+        else:
+            merged_count = 1
+
+        # Only use merged version if it results in exactly 1 polygon
+        # This handles cases like Staffordshire (9→1 merged boundary)
+        # but not Baarle-Nassau (9→2 which are separate enclaves that happen to touch)
+        if merged_count == 1:
+            # Replace all outer groups with one merged group
+            for i in reversed(outer_indices):
+                groups.pop(i)
+            groups.insert(outer_indices[0], ("outer", merged_outers, all_outer_ids))
+
+    # Find the outer geometry to use as base
     multipolygon = None
     base_index = -1
     for i, (role, geom, ids) in enumerate(groups):
@@ -736,18 +785,26 @@ def _convert_shapes_to_multipolygon(shapes, raise_on_failure=False):
             raise Exception(message)
         return None
 
+    # Check validity, but nested shells are OK (they represent enclaves in holes)
+    # Only reject if there are other types of invalidity
     if not multipolygon.is_valid:
-        group_ids = groups[base_index][2]
-        message = get_message(
-            'Failed to create multipolygon. Base shape with role "outer" is invalid. Group ids:',
-            pformat(group_ids),
-        )
-        warning(message)
-        if raise_on_failure:
-            raise Exception(message)
-        return None
+        from shapely.validation import explain_validity
 
-    # Itterate over the rest if there are any
+        reason = explain_validity(multipolygon)
+        # Nested shells are valid for multipolygons with enclaves (e.g., Baarle-Nassau)
+        # Only reject for other types of invalidity
+        if "Nested shells" not in reason:
+            group_ids = groups[base_index][2]
+            message = get_message(
+                f'Failed to create multipolygon. Base shape with role "outer" is invalid ({reason}). Group ids:',
+                pformat(group_ids),
+            )
+            warning(message)
+            if raise_on_failure:
+                raise Exception(message)
+            return None
+
+    # Iterate over the rest if there are any
     for i, (role, geom, ids) in enumerate(groups):
         if i == base_index:
             continue
