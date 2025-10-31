@@ -708,6 +708,7 @@ def _convert_shapes_to_multipolygon(shapes, raise_on_failure=False):
     # Group shapes by role using consecutive grouping
     # This preserves structure for complex cases (e.g., Baarle-Nassau with outer-inner-outer)
     import itertools
+
     groups = []
     for role, group in itertools.groupby(shapes, lambda s: s[0]):
         lines_and_ids = [(_[1], _[2]) for _ in group]
