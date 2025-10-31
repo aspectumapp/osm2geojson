@@ -5,7 +5,6 @@ and Overpass API data into GeoJSON format, handling various geometry types
 including nodes, ways, and relations.
 """
 
-import itertools
 import json
 import logging
 import os
@@ -706,21 +705,36 @@ def _convert_shapes_to_multipolygon(shapes, raise_on_failure=False):
             raise Exception(message)
         return None
 
-    # Intermediate groups [(role, geom, ids)]
+    # Group shapes by role using consecutive grouping
+    # This preserves structure for complex cases (e.g., Baarle-Nassau with outer-inner-outer)
+    import itertools
+
     groups = []
-    # New group each time it switches role
     for role, group in itertools.groupby(shapes, lambda s: s[0]):
         lines_and_ids = [(_[1], _[2]) for _ in group]
-        groups.append(
-            (
-                role,
-                _convert_lines_to_multipolygon(
-                    [_[0] for _ in lines_and_ids], raise_on_failure=raise_on_failure
-                ),
-                [_[1] for _ in lines_and_ids],
-            )
+        geom = _convert_lines_to_multipolygon(
+            [_[0] for _ in lines_and_ids], raise_on_failure=raise_on_failure
         )
+        groups.append((role, geom, [_[1] for _ in lines_and_ids]))
 
+    # Fix issue #54: If we have multiple outer groups, try merging them
+    # Only merge if the result is a single polygon (they actually connect)
+    outer_indices = [i for i, (role, _, _) in enumerate(groups) if role == "outer"]
+    if len(outer_indices) > 1:
+        # Try merging all outer lines together
+        all_outer_lines = [line for role, line, _ in shapes if role == "outer"]
+        all_outer_ids = [ref_id for role, _, ref_id in shapes if role == "outer"]
+        merged = _convert_lines_to_multipolygon(all_outer_lines, raise_on_failure=raise_on_failure)
+
+        # Count polygons: only merge if result is exactly 1 polygon
+        merged_count = len(list(merged.geoms)) if isinstance(merged, MultiPolygon) else 1
+        if merged_count == 1:
+            # Single polygon - replace all outer groups with merged one
+            for i in reversed(outer_indices):
+                groups.pop(i)
+            groups.insert(outer_indices[0], ("outer", merged, all_outer_ids))
+
+    # Find the outer geometry to use as base
     multipolygon = None
     base_index = -1
     for i, (role, geom, ids) in enumerate(groups):
@@ -747,7 +761,7 @@ def _convert_shapes_to_multipolygon(shapes, raise_on_failure=False):
             raise Exception(message)
         return None
 
-    # Itterate over the rest if there are any
+    # Iterate over the rest if there are any
     for i, (role, geom, ids) in enumerate(groups):
         if i == base_index:
             continue

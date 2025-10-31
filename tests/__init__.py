@@ -1,3 +1,4 @@
+from .test_issue_54 import test_issue_54_staffordshire_multipolygon
 from .test_main import TestOsm2GeoJsonMethods
 from .test_parse_xml import TestParseXmlMethods
 from .test_polygon_logic import TestIsGeometryPolygon, TestIsGeometryPolygonWithoutExceptions
