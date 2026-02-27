@@ -431,7 +431,7 @@ def is_geometry_polygon_without_exceptions(node, polygon_features: Optional[list
     # Second pass: check whitelists and "all" rules
     for rule in polygon_features:
         if rule["key"] in tags:
-            if rule["polygon"] == "all":
+            if rule["polygon"] == "all" or rule["polygon"] == "blacklist":
                 return True
             if rule["polygon"] == "whitelist" and tags[rule["key"]] in rule["values"]:
                 return True
