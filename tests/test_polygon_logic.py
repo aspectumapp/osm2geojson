@@ -191,6 +191,16 @@ class TestIsGeometryPolygonWithoutExceptions(unittest.TestCase):
         result = is_geometry_polygon_without_exceptions(node)
         self.assertFalse(result, "Element with blacklisted tag should NOT be a polygon")
 
+    def test_non_blacklist_match(self):
+        """
+        Test that non-blacklisted values for blacklist rules are correctly identified as polygons.
+        Example: natural=water (natural has a blacklist without water in it)
+        Should be a polygon.
+        """
+        node = {"tags": {"natural": "water"}}
+        result = is_geometry_polygon_without_exceptions(node)
+        self.assertTrue(result, "Element with non matching blacklisted tag should be a polygon")
+
     def test_no_relevant_tags(self):
         """
         Test default behavior when element has no tags matching any rules.
